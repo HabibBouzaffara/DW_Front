@@ -1,0 +1,18 @@
+<!-- login.component.html (Angular Material) -->
+<mat-card>
+  <form [formGroup]="form" (ngSubmit)="login()">
+    <mat-form-field
+      ><input matInput formControlName="email" placeholder="Email"
+    /></mat-form-field>
+    <mat-form-field
+      ><input
+        matInput
+        type="password"
+        formControlName="password"
+        placeholder="Password"
+    /></mat-form-field>
+    <button mat-raised-button color="primary" [disabled]="form.invalid">
+      Login
+    </button>
+  </form>
+</mat-card>
