@@ -53,8 +53,7 @@ navigateToForgotPassword() {
         .login(this.form.value.email!, this.form.value.password!)
         .subscribe({
           next: () => {
-            console.log('Login successful');
-            this.router.navigate(['/dashboard']);
+            this.auth.getUserRole() == '1' ? this.router.navigate(['/dashboard']) : this.router.navigate(['/products']); 
           },
           error: (err) => console.error('Login failed', err),
         });

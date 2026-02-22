@@ -22,12 +22,11 @@ const routes: Routes = [
   {
     path: 'products',
     component: ProductListComponent,
-    canActivate: [AdminGuard],
   },
   {
     path: 'products/:id',
     component: ProductDetailComponent,
-    canActivate: [AdminGuard],
+    // canActivate: [AdminGuard],
   },
   {
     path: 'register',

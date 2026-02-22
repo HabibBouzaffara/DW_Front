@@ -17,14 +17,14 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   // GET /api/AuthProduct
-  getAll(page = 1, pageSize = 12, category?: string): Observable<PagedResult<Product>> {
+  getAll(page = 1, pageSize = 12, category?: string): Observable<any> {
     let params = new HttpParams()
       .set('page', page)
       .set('pageSize', pageSize);
     if (category && category !== 'all') {
       params = params.set('category', category);
     }
-    return this.http.get<PagedResult<Product>>(this.baseUrl, { params });
+    return this.http.get<any>(this.baseUrl, { params });
   }
 
   // GET /api/AuthProduct/{id}
@@ -37,18 +37,38 @@ export class ProductService {
     return this.http.get<string[]>(`${this.baseUrl}/categories`);
   }
 
-  // POST /api/AuthProduct
-  create(product: Partial<Product>): Observable<Product> {
-    return this.http.post<Product>(this.baseUrl, product);
+  // POST /api/AuthProduct  — multipart/form-data
+  create(data: Partial<Product>, imageFile?: File): Observable<Product> {
+    const form = this.buildFormData(data, imageFile);
+    return this.http.post<Product>(this.baseUrl, form);
   }
 
-  // PUT /api/AuthProduct/{id}
-  update(id: number, product: Partial<Product>): Observable<Product> {
-    return this.http.put<Product>(`${this.baseUrl}/${id}`, product);
+  // PUT /api/AuthProduct/{id}  — multipart/form-data
+  update(id: number, data: Partial<Product>, imageFile?: File): Observable<Product> {
+    const form = this.buildFormData(data, imageFile);
+    return this.http.put<Product>(`${this.baseUrl}/${id}`, form);
   }
 
   // DELETE /api/AuthProduct/{id}
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  // ── Helper ──────────────────────────────────────────────────────────
+  private buildFormData(data: Partial<Product>, imageFile?: File): FormData {
+    const form = new FormData();
+
+    if (data.productName  != null) form.append('productName',  String(data.productName));
+    if (data.listPrice    != null) form.append('listPrice',    String(data.listPrice));
+    if (data.standardCost != null) form.append('standardCost', String(data.standardCost));
+    if (data.category     != null) form.append('category',     String(data.category));
+    if (data.subcategory  != null) form.append('subcategory',  String(data.subcategory));
+
+    // Raw file — backend converts to base64/stores
+    if (imageFile) {
+      form.append('image', imageFile, imageFile.name);
+    }
+
+    return form;
   }
 }

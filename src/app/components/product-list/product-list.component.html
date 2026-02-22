@@ -1,9 +1,10 @@
 <div class="pl-page">
+
   <!-- ── Header ── -->
   <div class="pl-header">
     <div class="pl-header__text">
       <h1 class="pl-title">Product Catalog</h1>
-      <p class="pl-subtitle">Browse all available products</p>
+      <p class="pl-subtitle">{{ isAdmin ? 'Admin view — manage products below' : 'Browse all available products' }}</p>
     </div>
     <div class="pl-header__controls">
       <!-- Search -->
@@ -37,17 +38,19 @@
           </option>
         </select>
       </div>
+
+      <!-- Admin: Add button -->
+      <button *ngIf="isAdmin" class="pl-btn-add" id="btn-add-product" (click)="openCreate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Product
+      </button>
     </div>
   </div>
 
   <!-- ── Stats bar ── -->
   <div class="pl-stats" *ngIf="!loading">
-    <span class="pl-stats__count">
-      {{ totalCount }} product{{ totalCount !== 1 ? 's' : '' }} found
-    </span>
-    <span class="pl-stats__page" *ngIf="totalPages > 1">
-      Page {{ page }} of {{ totalPages }}
-    </span>
+    <span class="pl-stats__count">{{ totalCount }} product{{ totalCount !== 1 ? 's' : '' }} found</span>
+    <span class="pl-stats__page" *ngIf="totalPages > 1">Page {{ page }} of {{ totalPages }}</span>
   </div>
 
   <!-- ── Loading ── -->
@@ -58,40 +61,62 @@
 
   <!-- ── Grid ── -->
   <div class="pl-grid" *ngIf="!loading">
-    <a
+    <div
       *ngFor="let product of pagedProducts"
-      [routerLink]="['/products', product.id]"
       class="pl-card"
+      [class.pl-card--admin]="isAdmin"
       id="product-card-{{ product.id }}"
     >
-      <!-- Image -->
-      <div class="pl-card__img-wrap">
-        <img
-          *ngIf="product.image"
-          [src]="product.image"
-          [alt]="product.productName"
-          class="pl-card__img"
-        />
-        <div *ngIf="!product.image" class="pl-card__no-img">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-        </div>
-        <span class="pl-card__badge">{{ product.category }}</span>
-      </div>
+      <!-- Whole-card link (client navigates, admin has separate buttons) -->
+      <a [routerLink]="['/products', product.id]" class="pl-card__link" [attr.tabindex]="isAdmin ? -1 : 0">
 
-      <!-- Body -->
-      <div class="pl-card__body">
-        <p class="pl-card__sub">{{ product.subcategory }}</p>
-        <h2 class="pl-card__name">{{ product.productName }}</h2>
-        <div class="pl-card__footer">
-          <span class="pl-card__price">\${{ product.listPrice | number:'1.2-2' }}</span>
-          <span class="pl-card__arrow">→</span>
+        <!-- Image -->
+        <div class="pl-card__img-wrap">
+          <img *ngIf="product.image" [src]="product.image" [alt]="product.productName" class="pl-card__img" />
+          <div *ngIf="!product.image" class="pl-card__no-img">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          <span class="pl-card__badge">{{ product.category }}</span>
+
+          <!-- Admin action overlay on image -->
+          <div *ngIf="isAdmin" class="pl-card__admin-overlay">
+            <button class="pl-card__action pl-card__action--edit"
+              (click)="openEdit(product, $event)"
+              id="btn-edit-{{ product.id }}"
+              title="Edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="pl-card__action pl-card__action--delete"
+              (click)="confirmDelete(product.id, $event)"
+              id="btn-delete-{{ product.id }}"
+              title="Delete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="pl-card__body">
+          <p class="pl-card__sub">{{ product.subcategory }}</p>
+          <h2 class="pl-card__name">{{ product.productName }}</h2>
+          <div class="pl-card__footer">
+            <span class="pl-card__price">\${{ product.listPrice | number:'1.2-2' }}</span>
+            <span class="pl-card__arrow">→</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Inline delete confirmation (admin only) -->
+      <div *ngIf="isAdmin && deleteConfirmId === product.id" class="pl-card__confirm" (click)="$event.stopPropagation()">
+        <p>Delete <strong>{{ product.productName }}</strong>?</p>
+        <div class="pl-card__confirm-actions">
+          <button class="pl-confirm-btn pl-confirm-btn--yes" (click)="deleteProduct()" id="btn-confirm-delete-{{ product.id }}">Yes, delete</button>
+          <button class="pl-confirm-btn pl-confirm-btn--no" (click)="cancelDelete()">Cancel</button>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- Empty state -->
     <div class="pl-empty" *ngIf="filteredProducts?.length === 0">
@@ -99,25 +124,101 @@
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
       <p>No products found</p>
+      <button *ngIf="isAdmin" class="pl-btn-add" (click)="openCreate()">+ Add the first product</button>
     </div>
   </div>
 
   <!-- ── Pagination ── -->
   <div class="pl-pagination" *ngIf="!loading && totalPages > 1">
-    <button
-      class="pl-pagination__btn"
-      id="btn-prev-page"
-      (click)="prevPage()"
-      [disabled]="page === 1"
-    >← Prev</button>
-
+    <button class="pl-pagination__btn" id="btn-prev-page" (click)="prevPage()" [disabled]="page === 1">← Prev</button>
     <span class="pl-pagination__info">{{ page }} / {{ totalPages }}</span>
+    <button class="pl-pagination__btn" id="btn-next-page" (click)="nextPage()" [disabled]="page === totalPages">Next →</button>
+  </div>
+</div>
 
-    <button
-      class="pl-pagination__btn"
-      id="btn-next-page"
-      (click)="nextPage()"
-      [disabled]="page === totalPages"
-    >Next →</button>
+<!-- ══════════════════════════════════
+     ADMIN CREATE / EDIT MODAL
+══════════════════════════════════ -->
+<div class="pl-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="pl-modal" (click)="$event.stopPropagation()">
+
+    <div class="pl-modal__header">
+      <h2>{{ isEditMode ? '✏️ Edit Product' : '➕ New Product' }}</h2>
+      <button class="pl-modal__close" (click)="closeModal()" id="btn-close-modal">✕</button>
+    </div>
+
+    <form #productForm="ngForm" (ngSubmit)="save(productForm)" class="pl-form">
+
+      <div class="pl-form__row">
+        <div class="pl-field">
+          <label for="f-name">Product Name *</label>
+          <input id="f-name" name="productName" [(ngModel)]="formData.productName" required
+                 class="pl-input" placeholder="e.g. Mountain Bike 500" />
+        </div>
+        <div class="pl-field">
+          <label for="f-category">Category *</label>
+          <input id="f-category" name="category" [(ngModel)]="formData.category" required
+                 class="pl-input" placeholder="e.g. Bikes" />
+        </div>
+      </div>
+
+      <div class="pl-form__row">
+        <div class="pl-field">
+          <label for="f-subcategory">Subcategory</label>
+          <input id="f-subcategory" name="subcategory" [(ngModel)]="formData.subcategory"
+                 class="pl-input" placeholder="e.g. Mountain Bikes" />
+        </div>
+        <div class="pl-field">
+          <label for="f-price">List Price *</label>
+          <input id="f-price" name="listPrice" type="number" min="0" step="0.01"
+                 [(ngModel)]="formData.listPrice" required class="pl-input" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="pl-form__row">
+        <div class="pl-field">
+          <label for="f-cost">Standard Cost *</label>
+          <input id="f-cost" name="standardCost" type="number" min="0" step="0.01"
+                 [(ngModel)]="formData.standardCost" required class="pl-input" placeholder="0.00" />
+        </div>
+        <div class="pl-field">
+          <label>Product Image</label>
+          <label for="f-image" class="pl-file-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            {{ imageFile ? imageFile.name : 'Choose image file…' }}
+          </label>
+          <input
+            id="f-image"
+            type="file"
+            accept="image/*"
+            class="pl-file-input"
+            (change)="onFileSelected($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Image preview -->
+      <div class="pl-preview" *ngIf="imagePreviewUrl">
+        <img [src]="imagePreviewUrl" alt="preview" class="pl-preview__img" />
+        <div>
+          <span *ngIf="imageFile" class="pl-preview__filename">{{ imageFile.name }}</span>
+          <span *ngIf="!imageFile" class="pl-preview__filename">Current image</span>
+          <p class="pl-preview__hint">This image will be sent to the server as-is</p>
+        </div>
+      </div>
+
+      <div class="pl-modal__footer">
+        <button type="button" class="pl-modal-btn pl-modal-btn--ghost" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="pl-modal-btn pl-modal-btn--primary"
+                [disabled]="saving || productForm.invalid" id="btn-save-product">
+          <span *ngIf="!saving">{{ isEditMode ? 'Save Changes' : 'Create Product' }}</span>
+          <span *ngIf="saving">Saving…</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
