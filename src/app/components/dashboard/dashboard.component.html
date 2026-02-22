@@ -1,5 +1,8 @@
 <div class="dashboard-container">
+  <!-- ============================= -->
   <!-- KPI CARDS -->
+  <!-- ============================= -->
+
   <div class="kpi-grid">
     <mat-card class="kpi-card">
       <h3>Total Sales</h3>
@@ -17,19 +20,15 @@
     </mat-card>
   </div>
 
-  <!-- CHART SECTION -->
   <!-- ============================= -->
-  <!-- =============================== -->
-  <!-- SALES BY VENDOR (INTERACTIVE) -->
-  <!-- =============================== -->
+  <!-- SALES BY VENDOR -->
+  <!-- ============================= -->
 
   <mat-card class="chart-card">
     <h2>Sales By Vendor</h2>
 
-    <!-- ================= FILTERS ================= -->
-
+    <!-- Filters -->
     <div class="filters">
-      <!-- TOP INPUT -->
       <label>Top:</label>
       <input
         type="number"
@@ -38,7 +37,6 @@
         min="1"
       />
 
-      <!-- CATEGORY DROPDOWN -->
       <label>Category:</label>
       <select [(ngModel)]="categoryVendor" (change)="onVendorFilterChange()">
         <option *ngFor="let c of categories" [value]="c">
@@ -46,7 +44,6 @@
         </option>
       </select>
 
-      <!-- SORT -->
       <label>Sort:</label>
       <select [(ngModel)]="sortVendor" (change)="onVendorFilterChange()">
         <option value="desc">Desc</option>
@@ -54,8 +51,7 @@
       </select>
     </div>
 
-    <!-- ================= CHART ================= -->
-
+    <!-- Chart -->
     <canvas
       baseChart
       [data]="vendorChartData"
@@ -66,54 +62,56 @@
   </mat-card>
 
   <!-- ============================= -->
-  <!-- TOP PRODUCTS -->
+  <!-- LAST TWO CHARTS SIDE BY SIDE -->
   <!-- ============================= -->
 
-  <!-- =============================== -->
-  <!-- PRODUCTS BY PROFIT -->
-  <!-- =============================== -->
+  <div class="charts-row">
+    <!-- =============================== -->
+    <!-- PRODUCTS BY PROFIT -->
+    <!-- =============================== -->
 
-  <mat-card class="chart-card">
-    <h2>Products By Profit</h2>
+    <mat-card class="chart-card half">
+      <h2>Products By Profit</h2>
 
-    <!-- Optional Controls -->
-    <div class="filters">
-      <label>Top:</label>
-      <input
-        type="number"
-        [(ngModel)]="topProfit"
-        (change)="loadProductsByProfit()"
-        min="1"
-      />
+      <div class="filters">
+        <label>Top:</label>
+        <input
+          type="number"
+          [(ngModel)]="topProfit"
+          (change)="loadProductsByProfit()"
+          min="1"
+        />
 
-      <label>Sort:</label>
-      <select [(ngModel)]="sortProfit" (change)="loadProductsByProfit()">
-        <option value="desc">Desc</option>
-        <option value="asc">Asc</option>
-      </select>
-    </div>
+        <label>Sort:</label>
+        <select [(ngModel)]="sortProfit" (change)="loadProductsByProfit()">
+          <option value="desc">Desc</option>
+          <option value="asc">Asc</option>
+        </select>
+      </div>
 
-    <canvas
-      baseChart
-      [data]="profitChartData"
-      [options]="profitChartOptions"
-      [type]="'bar'"
-    >
-    </canvas>
-  </mat-card>
-  <!-- =============================== -->
-  <!-- SALES VS PURCHASE COMPARISON -->
-  <!-- =============================== -->
+      <canvas
+        baseChart
+        [data]="profitChartData"
+        [options]="profitChartOptions"
+        [type]="'bar'"
+      >
+      </canvas>
+    </mat-card>
 
-  <mat-card class="chart-card">
-    <h2>Sales vs Purchase</h2>
+    <!-- =============================== -->
+    <!-- SALES VS PURCHASE (LINE) -->
+    <!-- =============================== -->
 
-    <canvas
-      baseChart
-      [data]="comparisonChartData"
-      [options]="comparisonChartOptions"
-      [type]="'bar'"
-    >
-    </canvas>
-  </mat-card>
+    <mat-card class="chart-card half">
+      <h2>Sales vs Purchase Trend</h2>
+
+      <canvas
+        baseChart
+        [data]="comparisonChartData"
+        [options]="comparisonChartOptions"
+        [type]="'line'"
+      >
+      </canvas>
+    </mat-card>
+  </div>
 </div>
