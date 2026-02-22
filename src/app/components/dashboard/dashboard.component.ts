@@ -29,23 +29,24 @@ export class DashboardComponent implements OnInit {
 
   chartLoading = false;
   chartProgress = 0;
+  private progressInterval: any;
 
   private startLoadingAnimation() {
     this.chartLoading = true;
     this.chartProgress = 0;
-
-    const interval = setInterval(() => {
+    clearInterval(this.progressInterval);
+    this.progressInterval = setInterval(() => {
       if (this.chartProgress < 90) {
         this.chartProgress += 10;
       } else {
-        clearInterval(interval);
+        clearInterval(this.progressInterval);
       }
     }, 100);
   }
 
   private stopLoadingAnimation() {
+    clearInterval(this.progressInterval);
     this.chartProgress = 100;
-
     setTimeout(() => {
       this.chartLoading = false;
     }, 300);
@@ -98,9 +99,7 @@ export class DashboardComponent implements OnInit {
 
   vendorChartOptions = {
     responsive: true,
-    plugins: {
-      legend: { display: true },
-    },
+    plugins: { legend: { display: true } },
   };
 
   profitChartData: any = {
@@ -116,9 +115,7 @@ export class DashboardComponent implements OnInit {
 
   profitChartOptions = {
     responsive: true,
-    plugins: {
-      legend: { display: true },
-    },
+    plugins: { legend: { display: true } },
   };
 
   comparisonChartData: any = {
@@ -139,72 +136,109 @@ export class DashboardComponent implements OnInit {
 
   comparisonChartOptions = {
     responsive: true,
-    plugins: {
-      legend: { display: true },
-    },
+    plugins: { legend: { display: true } },
   };
 
   /* ========================= */
-  /* INIT                      */
+  /* INIT — single parallel    */
+  /* batch fetch via forkJoin  */
   /* ========================= */
 
   ngOnInit(): void {
-    this.loadVendorData(true);
-    this.loadKpis(true);
-    this.loadProductsByProfit(true);
+    this.startLoadingAnimation();
+
+    this.dashboardService
+      .loadInitialStats(
+        this.topVendor,
+        this.sortVendor,
+        this.categoryVendor,
+        this.topProfit,
+        this.sortProfit
+      )
+      .subscribe({
+        next: ([kpis, vendorData, profitData]) => {
+          this.applyKpis(kpis);
+          this.applyVendorData(vendorData);
+          this.applyProfitData(profitData);
+          this.stopLoadingAnimation();
+        },
+        error: () => {
+          this.stopLoadingAnimation();
+        },
+      });
   }
 
   /* ========================= */
-  /* KPI                       */
+  /* APPLY HELPERS             */
   /* ========================= */
 
-  loadKpis(showLoading: boolean = false) {
-    if (showLoading) {
-      this.startLoadingAnimation();
-    }
+  private applyKpis(data: any) {
+    this.kpis.totalSales = data.totalSalesAmount;
+    this.kpis.totalCustomers = data.totalCustomers;
+    this.kpis.totalProducts = data.totalProducts;
+  }
 
-    this.dashboardService.getKpis().subscribe((data) => {
-      this.kpis.totalSales = data.totalSalesAmount;
-      this.kpis.totalCustomers = data.totalCustomers;
-      this.kpis.totalProducts = data.totalProducts;
+  private applyVendorData(data: any[]) {
+    this.vendorChartData = {
+      ...this.vendorChartData,
+      labels: data.map((x) => x.vendorName),
+      datasets: [
+        {
+          ...this.vendorChartData.datasets[0],
+          data: data.map((x) => Number(x.totalSalesAmount)),
+        },
+      ],
+    };
+  }
 
-      if (showLoading) {
-        this.stopLoadingAnimation();
-      }
-    });
+  private applyProfitData(data: any[]) {
+    this.profitChartData = {
+      ...this.profitChartData,
+      labels: data.map((x) => x.productName),
+      datasets: [
+        {
+          ...this.profitChartData.datasets[0],
+          data: data.map((x) => Number(x.profit)),
+        },
+      ],
+    };
+
+    this.comparisonChartData = {
+      ...this.comparisonChartData,
+      labels: data.map((x) => x.productName),
+      datasets: [
+        {
+          ...this.comparisonChartData.datasets[0],
+          data: data.map((x) => Number(x.totalSalesAmount)),
+        },
+        {
+          ...this.comparisonChartData.datasets[1],
+          data: data.map((x) => Number(x.totalPurchaseAmount)),
+        },
+      ],
+    };
   }
 
   /* ========================= */
   /* SALES BY VENDOR           */
   /* ========================= */
 
-  loadVendorData(showLoading: boolean = true) {
-    if (showLoading) {
-      this.startLoadingAnimation();
-    }
-
+  loadVendorData(showLoading = true) {
+    if (showLoading) this.startLoadingAnimation();
     this.dashboardService
       .getSalesByVendor(this.topVendor, this.sortVendor, this.categoryVendor)
-      .subscribe((data) => {
-        this.vendorChartData = {
-          ...this.vendorChartData,
-          labels: data.map((x) => x.vendorName),
-          datasets: [
-            {
-              ...this.vendorChartData.datasets[0],
-              data: data.map((x) => Number(x.totalSalesAmount)),
-            },
-          ],
-        };
-
-        if (showLoading) {
-          this.stopLoadingAnimation();
-        }
+      .subscribe({
+        next: (data) => {
+          this.applyVendorData(data);
+          if (showLoading) this.stopLoadingAnimation();
+        },
+        error: () => {
+          if (showLoading) this.stopLoadingAnimation();
+        },
       });
   }
 
   onVendorFilterChange() {
-    // 🔥 Silent reload — NO loading animation
     this.loadVendorData(false);
   }
 
@@ -212,43 +246,18 @@ export class DashboardComponent implements OnInit {
   /* PRODUCTS BY PROFIT        */
   /* ========================= */
 
-  loadProductsByProfit(showLoading: boolean = false) {
-    if (showLoading) {
-      this.startLoadingAnimation();
-    }
-
+  loadProductsByProfit(showLoading = false) {
+    if (showLoading) this.startLoadingAnimation();
     this.dashboardService
       .getProductsByProfit(this.topProfit, this.sortProfit)
-      .subscribe((data) => {
-        this.profitChartData = {
-          ...this.profitChartData,
-          labels: data.map((x) => x.productName),
-          datasets: [
-            {
-              ...this.profitChartData.datasets[0],
-              data: data.map((x) => Number(x.profit)),
-            },
-          ],
-        };
-
-        this.comparisonChartData = {
-          ...this.comparisonChartData,
-          labels: data.map((x) => x.productName),
-          datasets: [
-            {
-              ...this.comparisonChartData.datasets[0],
-              data: data.map((x) => Number(x.totalSalesAmount)),
-            },
-            {
-              ...this.comparisonChartData.datasets[1],
-              data: data.map((x) => Number(x.totalPurchaseAmount)),
-            },
-          ],
-        };
-
-        if (showLoading) {
-          this.stopLoadingAnimation();
-        }
+      .subscribe({
+        next: (data) => {
+          this.applyProfitData(data);
+          if (showLoading) this.stopLoadingAnimation();
+        },
+        error: () => {
+          if (showLoading) this.stopLoadingAnimation();
+        },
       });
   }
 }

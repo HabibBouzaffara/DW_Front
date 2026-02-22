@@ -1,0 +1,272 @@
+/* ============================================================
+   PRODUCT DETAIL PAGE
+   ============================================================ */
+
+.pd-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  padding: 2rem 2.5rem 4rem;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: #e2e8f0;
+}
+
+/* ── Loading ── */
+.pd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  color: #94a3b8;
+}
+
+.pd-spinner {
+  width: 56px;
+  height: 56px;
+  border: 4px solid rgba(167, 139, 250, 0.2);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Error ── */
+.pd-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1.5rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.pd-error svg { width: 80px; height: 80px; }
+.pd-error h2 { font-size: 1.5rem; color: #94a3b8; }
+
+/* ── Back link ── */
+.pd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #a78bfa;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: gap 0.2s;
+}
+
+.pd-back svg { width: 18px; height: 18px; }
+.pd-back:hover { gap: 0.7rem; }
+
+/* ── Card ── */
+.pd-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Image Panel ── */
+.pd-card__img-panel {
+  position: relative;
+  background: linear-gradient(135deg, #1e1b4b, #0f172a);
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.pd-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.pd-card__img-panel:hover .pd-card__img { transform: scale(1.04); }
+
+.pd-card__no-img {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+  color: #334155;
+}
+.pd-card__no-img svg { width: 100px; height: 100px; }
+.pd-card__no-img span { font-size: 0.9rem; }
+
+.pd-card__overlay {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Badges ── */
+.pd-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pd-badge--cat {
+  background: linear-gradient(90deg, #7c3aed, #4f46e5);
+  color: #fff;
+}
+
+.pd-badge--sub {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  backdrop-filter: blur(6px);
+}
+
+/* ── Info Panel ── */
+.pd-card__info {
+  padding: 2.5rem 2rem 2.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pd-card__meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.pd-meta-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pd-card__title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  line-height: 1.25;
+  margin: 0;
+}
+
+/* ── Price box ── */
+.pd-price-box {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  border-radius: 14px;
+  padding: 1rem 1.5rem;
+  align-self: flex-start;
+}
+
+.pd-price-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.pd-price-value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+}
+
+/* ── Divider ── */
+.pd-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.25rem 0;
+}
+
+/* ── Details grid ── */
+.pd-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.pd-detail-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: border-color 0.2s;
+}
+
+.pd-detail-item:hover { border-color: rgba(167, 139, 250, 0.3); }
+
+.pd-detail-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.pd-detail-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+/* ── Back CTA ── */
+.pd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(90deg, #7c3aed, #4f46e5);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.8rem 2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  margin-top: auto;
+  align-self: flex-start;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+}
+
+.pd-back-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .pd-page { padding: 1.25rem; }
+  .pd-card { grid-template-columns: 1fr; }
+  .pd-card__img-panel { min-height: 280px; }
+  .pd-card__info { padding: 1.5rem; }
+  .pd-card__title { font-size: 1.5rem; }
+  .pd-price-value { font-size: 1.8rem; }
+}
