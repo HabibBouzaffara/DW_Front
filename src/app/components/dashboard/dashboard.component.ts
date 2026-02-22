@@ -1,55 +1,84 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { Component, OnInit } from '@angular/core';
+import { DashboardService } from '../../services/dashboard.service';
+import { ChartConfiguration } from 'chart.js';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { StatisticsService } from 'src/app/services/dim-customer.service';
-import { AuthService } from 'src/app/services/auth.service';
-import { TimeSeriesPointDto, TopProductDto } from 'src/app/models/models';
-// FIXED IMPORT ← THIS WAS WRONG
-
+import { NgChartsModule } from 'ng2-charts';
+import { CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatToolbarModule,
-    MatCardModule,
-    MatTableModule,
-    MatButtonModule,
-  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
+  standalone: true,
+  imports: [
+    MatCardModule,
+    NgChartsModule,
+    CurrencyPipe,
+    CommonModule,
+    FormsModule,
+  ],
 })
 export class DashboardComponent implements OnInit {
-  private statsService = inject(StatisticsService);
-  private authService = inject(AuthService);
+  salesData: any[] = [];
+  topProducts: any[] = [];
+  // ===== FILTERS =====
+  topVendor: number = 10;
+  sortVendor: string = 'desc';
+  categoryVendor: string = 'all';
 
-  kpis: any[] = [];
-  topProducts: TopProductDto[] = []; // ✅ Typed
-  chartData: any[] = [];
-  displayedColumns: string[] = ['product', 'sales']; // ✅ For mat-table
+  categories: string[] = ['all','clothing', 'Bikes', 'Components', 'Unknown', 'Accessories'];
 
-  ngOnInit() {
-    this.loadDashboardData();
+  /* ===== CHART CONFIG ===== */
+
+  vendorChartData: any = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Sales By Vendor',
+        data: [],
+        backgroundColor: 'rgba(63,81,181,0.6)',
+      },
+    ],
+  };
+
+  vendorChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: true },
+    },
+  };
+
+  constructor(private dashboardService: DashboardService) {}
+
+  ngOnInit(): void {
+    this.loadVendorData();
+    // this.loadTopProducts();
   }
 
-  loadDashboardData() {
-    // ✅ Now WORKS - correct service + types
-    this.statsService.getTopProducts(5, 'desc').subscribe((data) => {
+  loadVendorData() {
+    this.dashboardService
+      .getSalesByVendor(this.topVendor, this.sortVendor, this.categoryVendor)
+      .subscribe((data) => {
+        console.log('Vendor Data:', data);
+
+        // ✅ Correct Mapping
+        this.vendorChartData.labels = data.map((x) => x.vendorName);
+
+        this.vendorChartData.datasets[0].data = data.map(
+          (x) => x.totalSalesAmount,
+        );
+
+        // ✅ Force Angular change detection
+        this.vendorChartData = { ...this.vendorChartData };
+      });
+  }
+  onVendorFilterChange() {
+    this.loadVendorData();
+  }
+  loadTopProducts() {
+    this.dashboardService.getTopProducts(5).subscribe((data) => {
       this.topProducts = data;
     });
-
-    this.statsService
-      .getTimeSeries('sales', 'month', 12)
-      .subscribe((data: TimeSeriesPointDto[]) => {
-        this.chartData = [
-          {
-            name: 'Sales',
-            series: data.map((p) => ({ name: p.period, value: p.totalAmount })),
-          },
-        ];
-      });
   }
 }

@@ -46,7 +46,10 @@ export class LoginComponent {
       this.auth
         .login(this.form.value.email!, this.form.value.password!)
         .subscribe({
-          next: () => this.router.navigate(['/dashboard']),
+          next: () => {
+            console.log('Login successful');
+            this.router.navigate(['/dashboard']);
+          },
           error: (err) => console.error('Login failed', err),
         });
     }

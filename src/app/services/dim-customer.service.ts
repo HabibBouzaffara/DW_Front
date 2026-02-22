@@ -12,7 +12,7 @@ import {
 import { environment } from '../environments/environment'; // Fixed path!
 @Injectable({ providedIn: 'root' })
 export class DimCustomerService {
-  private base = '/api/DimCustomer';
+  private base = `${environment.apiBaseUrl}/DimCustomer`;
 
   constructor(private http: HttpClient) {}
 
@@ -51,7 +51,7 @@ export class StatisticsService {
     return this.http
       .get<
         TopProductDto[]
-      >(`${this.baseUrl}/api/statistics/top-products`, { params })
+      >(`${this.baseUrl}/statistics/top-products`, { params })
       .pipe(
         retry(2),
         catchError((err) => {
@@ -74,7 +74,7 @@ export class StatisticsService {
       .set('months', months.toString())
       .set('category', category);
     return this.http
-      .get<TimeSeriesPointDto[]>('/api/statistics/time-series', { params })
+      .get<TimeSeriesPointDto[]>(`${this.baseUrl}/statistics/time-series`, { params })
       .pipe(retry(2));
   }
 }

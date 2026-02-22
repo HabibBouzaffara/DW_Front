@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { AuthUser } from '../models/models';
-
+import { environment } from '../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private tokenSubject = new BehaviorSubject<string | null>(
@@ -15,12 +15,17 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   register(email: string, password: string): Observable<AuthUser> {
-    return this.http.post<AuthUser>('/api/auth/register', { email, password });
+    return this.http.post<AuthUser>(`${environment.apiBaseUrl}/auth/register`, {
+      email,
+      password,
+    });
   }
 
   login(email: string, password: string): Observable<string> {
     return this.http
-      .post<{ token: string }>('/api/auth/login', { email, password })
+      .post<{
+        token: string;
+      }>(`${environment.apiBaseUrl}/auth/login`, { email, password })
       .pipe(
         tap(({ token }) => {
           this.tokenSubject.next(token);

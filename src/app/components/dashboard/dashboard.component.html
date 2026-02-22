@@ -1,38 +1,111 @@
-<mat-toolbar color="primary">
-  <span>Sales DW Dashboard (Admin)</span>
-</mat-toolbar>
-
 <div class="dashboard-container">
-  <!-- KPIs -->
+  <!-- KPI CARDS -->
   <div class="kpi-grid">
     <mat-card class="kpi-card">
-      <mat-card-title>Total Sales</mat-card-title>
-      <mat-card-content><h1>$12,450</h1></mat-card-content>
+      <h3>Total Sales</h3>
+      <h1>$ 1,250,000</h1>
     </mat-card>
+
     <mat-card class="kpi-card">
-      <mat-card-title>Total Orders</mat-card-title>
-      <mat-card-content><h1>1,234</h1></mat-card-content>
+      <h3>Total Customers</h3>
+      <h1>1,240</h1>
+    </mat-card>
+
+    <mat-card class="kpi-card">
+      <h3>Total Products</h3>
+      <h1>320</h1>
     </mat-card>
   </div>
 
-  <!-- Top Products Table -->
-  <mat-card class="stats-card">
-    <mat-card-header>
-      <mat-card-title>Top Products</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <table mat-table [dataSource]="topProducts" class="w-100">
-        <ng-container matColumnDef="product">
-          <th mat-header-cell *matHeaderCellDef>Product</th>
-          <td mat-cell *matCellDef="let item">{{ item.product }}</td>
-        </ng-container>
-        <ng-container matColumnDef="sales">
-          <th mat-header-cell *matHeaderCellDef>Sales</th>
-          <td mat-cell *matCellDef="let item">{{ item.sales | currency }}</td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  <!-- CHART SECTION -->
+  <!-- ============================= -->
+  <!-- =============================== -->
+<!-- SALES BY VENDOR (INTERACTIVE) -->
+<!-- =============================== -->
+
+<mat-card class="chart-card">
+
+  <h2>Sales By Vendor</h2>
+
+  <!-- ================= FILTERS ================= -->
+
+  <div class="filters">
+
+    <!-- TOP INPUT -->
+    <label>Top:</label>
+    <input
+      type="number"
+      [(ngModel)]="topVendor"
+      (change)="onVendorFilterChange()"
+      min="1"
+    />
+
+    <!-- CATEGORY DROPDOWN -->
+    <label>Category:</label>
+    <select
+      [(ngModel)]="categoryVendor"
+      (change)="onVendorFilterChange()">
+
+      <option *ngFor="let c of categories" [value]="c">
+        {{ c }}
+      </option>
+
+    </select>
+
+    <!-- SORT -->
+    <label>Sort:</label>
+    <select
+      [(ngModel)]="sortVendor"
+      (change)="onVendorFilterChange()">
+
+      <option value="desc">Desc</option>
+      <option value="asc">Asc</option>
+
+    </select>
+
+  </div>
+
+  <!-- ================= CHART ================= -->
+
+  <canvas
+    baseChart
+    [data]="vendorChartData"
+    [options]="vendorChartOptions"
+    [type]="'bar'">
+  </canvas>
+
+</mat-card>
+
+  <!-- ============================= -->
+  <!-- TOP PRODUCTS -->
+  <!-- ============================= -->
+
+  <mat-card class="table-card">
+    <h2>Top Products (Sales)</h2>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Total Sales</th>
+            <th>Total Qty</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of topProducts">
+            <td>{{ p.productName }}</td>
+            <td>{{ p.category }}</td>
+
+            <!-- ✅ Use totalSalesAmount -->
+            <td>{{ p.totalSalesAmount | currency: "USD" }}</td>
+
+            <td>{{ p.totalQty }}</td>
+          </tr>
+        </tbody>
       </table>
-    </mat-card-content>
+    </div>
   </mat-card>
 </div>
