@@ -3,109 +3,117 @@
   <div class="kpi-grid">
     <mat-card class="kpi-card">
       <h3>Total Sales</h3>
-      <h1>$ 1,250,000</h1>
+      <h1>{{ kpis.totalSales | currency: "USD" }}</h1>
     </mat-card>
 
     <mat-card class="kpi-card">
       <h3>Total Customers</h3>
-      <h1>1,240</h1>
+      <h1>{{ kpis.totalCustomers | number }}</h1>
     </mat-card>
 
     <mat-card class="kpi-card">
       <h3>Total Products</h3>
-      <h1>320</h1>
+      <h1>{{ kpis.totalProducts | number }}</h1>
     </mat-card>
   </div>
 
   <!-- CHART SECTION -->
   <!-- ============================= -->
   <!-- =============================== -->
-<!-- SALES BY VENDOR (INTERACTIVE) -->
-<!-- =============================== -->
+  <!-- SALES BY VENDOR (INTERACTIVE) -->
+  <!-- =============================== -->
 
-<mat-card class="chart-card">
+  <mat-card class="chart-card">
+    <h2>Sales By Vendor</h2>
 
-  <h2>Sales By Vendor</h2>
+    <!-- ================= FILTERS ================= -->
 
-  <!-- ================= FILTERS ================= -->
+    <div class="filters">
+      <!-- TOP INPUT -->
+      <label>Top:</label>
+      <input
+        type="number"
+        [(ngModel)]="topVendor"
+        (change)="onVendorFilterChange()"
+        min="1"
+      />
 
-  <div class="filters">
+      <!-- CATEGORY DROPDOWN -->
+      <label>Category:</label>
+      <select [(ngModel)]="categoryVendor" (change)="onVendorFilterChange()">
+        <option *ngFor="let c of categories" [value]="c">
+          {{ c }}
+        </option>
+      </select>
 
-    <!-- TOP INPUT -->
-    <label>Top:</label>
-    <input
-      type="number"
-      [(ngModel)]="topVendor"
-      (change)="onVendorFilterChange()"
-      min="1"
-    />
+      <!-- SORT -->
+      <label>Sort:</label>
+      <select [(ngModel)]="sortVendor" (change)="onVendorFilterChange()">
+        <option value="desc">Desc</option>
+        <option value="asc">Asc</option>
+      </select>
+    </div>
 
-    <!-- CATEGORY DROPDOWN -->
-    <label>Category:</label>
-    <select
-      [(ngModel)]="categoryVendor"
-      (change)="onVendorFilterChange()">
+    <!-- ================= CHART ================= -->
 
-      <option *ngFor="let c of categories" [value]="c">
-        {{ c }}
-      </option>
-
-    </select>
-
-    <!-- SORT -->
-    <label>Sort:</label>
-    <select
-      [(ngModel)]="sortVendor"
-      (change)="onVendorFilterChange()">
-
-      <option value="desc">Desc</option>
-      <option value="asc">Asc</option>
-
-    </select>
-
-  </div>
-
-  <!-- ================= CHART ================= -->
-
-  <canvas
-    baseChart
-    [data]="vendorChartData"
-    [options]="vendorChartOptions"
-    [type]="'bar'">
-  </canvas>
-
-</mat-card>
+    <canvas
+      baseChart
+      [data]="vendorChartData"
+      [options]="vendorChartOptions"
+      [type]="'bar'"
+    >
+    </canvas>
+  </mat-card>
 
   <!-- ============================= -->
   <!-- TOP PRODUCTS -->
   <!-- ============================= -->
 
-  <mat-card class="table-card">
-    <h2>Top Products (Sales)</h2>
+  <!-- =============================== -->
+  <!-- PRODUCTS BY PROFIT -->
+  <!-- =============================== -->
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Category</th>
-            <th>Total Sales</th>
-            <th>Total Qty</th>
-          </tr>
-        </thead>
+  <mat-card class="chart-card">
+    <h2>Products By Profit</h2>
 
-        <tbody>
-          <tr *ngFor="let p of topProducts">
-            <td>{{ p.productName }}</td>
-            <td>{{ p.category }}</td>
+    <!-- Optional Controls -->
+    <div class="filters">
+      <label>Top:</label>
+      <input
+        type="number"
+        [(ngModel)]="topProfit"
+        (change)="loadProductsByProfit()"
+        min="1"
+      />
 
-            <!-- ✅ Use totalSalesAmount -->
-            <td>{{ p.totalSalesAmount | currency: "USD" }}</td>
-
-            <td>{{ p.totalQty }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <label>Sort:</label>
+      <select [(ngModel)]="sortProfit" (change)="loadProductsByProfit()">
+        <option value="desc">Desc</option>
+        <option value="asc">Asc</option>
+      </select>
     </div>
+
+    <canvas
+      baseChart
+      [data]="profitChartData"
+      [options]="profitChartOptions"
+      [type]="'bar'"
+    >
+    </canvas>
+  </mat-card>
+  <!-- =============================== -->
+  <!-- SALES VS PURCHASE COMPARISON -->
+  <!-- =============================== -->
+
+  <mat-card class="chart-card">
+    <h2>Sales vs Purchase</h2>
+
+    <canvas
+      baseChart
+      [data]="comparisonChartData"
+      [options]="comparisonChartOptions"
+      [type]="'bar'"
+    >
+    </canvas>
   </mat-card>
 </div>

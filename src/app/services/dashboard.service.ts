@@ -80,7 +80,13 @@ export class DashboardService {
       `${this.baseUrl}/statistics/time-series?metric=${metric}&period=${period}&months=${months}`,
     );
   }
-  getCategories() {
-    return this.http.get<string[]>(`${this.baseUrl}/DimProduct/categories`);
+  getProductsByProfit(top: number = 10, sort: string = 'desc') {
+    return this.http.get<any[]>(
+      `${this.baseUrl}/statistics/products-by-profit?top=${top}&sort=${sort}`,
+    );
+  }
+
+  getKpis() {
+    return this.http.get<any>(`${this.baseUrl}/statistics/totals`);
   }
 }

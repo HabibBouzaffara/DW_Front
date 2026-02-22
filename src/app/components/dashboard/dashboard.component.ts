@@ -27,7 +27,14 @@ export class DashboardComponent implements OnInit {
   sortVendor: string = 'desc';
   categoryVendor: string = 'all';
 
-  categories: string[] = ['all','clothing', 'Bikes', 'Components', 'Unknown', 'Accessories'];
+  categories: string[] = [
+    'all',
+    'clothing',
+    'Bikes',
+    'Components',
+    'Unknown',
+    'Accessories',
+  ];
 
   /* ===== CHART CONFIG ===== */
 
@@ -49,13 +56,71 @@ export class DashboardComponent implements OnInit {
     },
   };
 
+  kpis = {
+    totalSales: 0,
+    totalCustomers: 0,
+    totalProducts: 0,
+  };
+
+  profitChartData: any = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Profit By Product',
+        data: [],
+        backgroundColor: 'rgba(76,175,80,0.6)',
+      },
+    ],
+  };
+
+  profitChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: true },
+    },
+  };
+  topProfit: number = 10;
+  sortProfit: string = 'desc';
+
+  comparisonChartData: any = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Total Sales',
+        data: [],
+        backgroundColor: 'rgba(33,150,243,0.6)',
+      },
+      {
+        label: 'Total Purchase',
+        data: [],
+        backgroundColor: 'rgba(244,67,54,0.6)',
+      },
+    ],
+  };
+
+  comparisonChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: true },
+    },
+  };
   constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
     this.loadVendorData();
+    this.loadKpis();
     // this.loadTopProducts();
+    this.loadProductsByProfit();
   }
+  loadKpis() {
+    this.dashboardService.getKpis().subscribe((data) => {
+      console.log('KPI DATA:', data);
 
+      this.kpis.totalSales = data.totalSalesAmount;
+      this.kpis.totalCustomers = data.totalCustomers;
+      this.kpis.totalProducts = data.totalProducts;
+    });
+  }
   loadVendorData() {
     this.dashboardService
       .getSalesByVendor(this.topVendor, this.sortVendor, this.categoryVendor)
@@ -80,5 +145,34 @@ export class DashboardComponent implements OnInit {
     this.dashboardService.getTopProducts(5).subscribe((data) => {
       this.topProducts = data;
     });
+  }
+  loadProductsByProfit() {
+    this.dashboardService
+      .getProductsByProfit(this.topProfit, this.sortProfit)
+      .subscribe((data) => {
+        console.log('Profit Data:', data);
+
+        // 🔹 PROFIT CHART
+        this.profitChartData.labels = data.map((x) => x.productName);
+
+        this.profitChartData.datasets[0].data = data.map((x) =>
+          Number(x.profit),
+        );
+
+        this.profitChartData = { ...this.profitChartData };
+
+        // 🔹 SALES VS PURCHASE CHART
+        this.comparisonChartData.labels = data.map((x) => x.productName);
+
+        this.comparisonChartData.datasets[0].data = data.map((x) =>
+          Number(x.totalSalesAmount),
+        );
+
+        this.comparisonChartData.datasets[1].data = data.map((x) =>
+          Number(x.totalPurchaseAmount),
+        );
+
+        this.comparisonChartData = { ...this.comparisonChartData };
+      });
   }
 }
