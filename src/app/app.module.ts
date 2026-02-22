@@ -24,6 +24,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 // Routes
 import { AppRoutingModule } from './app-routing.module';
+import { RegisterComponent } from './register/register.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 
 @NgModule({
   declarations: [AppComponent],

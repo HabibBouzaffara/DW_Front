@@ -1,9 +1,8 @@
 <div class="auth-container">
   <mat-card class="auth-card">
-    <h2>Welcome Back</h2>
-    <p class="subtitle">Sign in to your dashboard</p>
-
-    <form [formGroup]="form" (ngSubmit)="login()">
+    <h2>Create Account 🚀</h2>
+    <p class="subtitle">Join our platform</p>
+    <form [formGroup]="form" (ngSubmit)="register()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
         <input matInput formControlName="email" />
@@ -14,19 +13,13 @@
         <input matInput type="password" formControlName="password" />
       </mat-form-field>
 
-      <button
-        mat-raised-button
-        color="primary"
-        class="auth-btn"
-        [disabled]="form.invalid"
-      >
-        Login
+      <button mat-raised-button color="primary" class="auth-btn">
+        Register
       </button>
     </form>
 
     <div class="auth-links">
-      <a (click)="navigateToForgotPassword()">Forgot password?</a>
-      <a (click)="navigateToRegister()">Don't have an account?</a>
+        <a (click)="navigateToLogin()">Already have an account?</a>
     </div>
   </mat-card>
 </div>

@@ -17,6 +17,18 @@ const routes: Routes = [
     component: AuthProductListComponent,
     canActivate: [AdminGuard],
   },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 ];
 

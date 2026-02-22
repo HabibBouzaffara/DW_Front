@@ -52,3 +52,25 @@
     flex-direction: column;
   }
 }
+.kpi-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: 0.3s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+.dashboard-container {
+  padding: 30px;
+  background: transparent;
+}
+
+.chart-card {
+  padding: 25px;
+  margin-bottom: 25px;
+}

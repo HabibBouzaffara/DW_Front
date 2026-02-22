@@ -5,37 +5,34 @@ import {
   FormBuilder,
   Validators,
   FormGroup,
-} from '@angular/forms'; // ← ADD THIS
+} from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule, // ← ADD THIS LINE
+    ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
   ],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css'], // reuse same CSS
 })
-export class LoginComponent {
-navigateToForgotPassword() {
-    this.router.navigate(['/forgot-password']);
-}
-  navigateToRegister() {
-    this.router.navigate(['/register']);
+export class RegisterComponent {
+  navigateToLogin() {
+    this.router.navigate(['/login']);
   }
-  form: FormGroup; // ← Declare as FormGroup type
-  hide = true;
+  form: FormGroup;
+
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
@@ -47,16 +44,16 @@ navigateToForgotPassword() {
     });
   }
 
-  login() {
+  register() {
     if (this.form.valid) {
       this.auth
-        .login(this.form.value.email!, this.form.value.password!)
+        .register(this.form.value.email!, this.form.value.password!)
         .subscribe({
           next: () => {
-            console.log('Login successful');
-            this.router.navigate(['/dashboard']);
+            console.log('Registration successful');
+            this.router.navigate(['/login']);
           },
-          error: (err) => console.error('Login failed', err),
+          error: (err) => console.error('Registration failed', err),
         });
     }
   }

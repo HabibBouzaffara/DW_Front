@@ -1,4 +1,61 @@
-/* You can add global styles to this file, and also import other style files */
+/* ============================= */
+/* GLOBAL STYLES - PREMIUM LOOK  */
+/* ============================= */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: "Inter", "Roboto", sans-serif;
+  background: #0f172a; /* Dark professional background */
+  color: white;
+}
+
+/* Smooth scrolling */
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+/* Make chart canvas transparent */
+canvas {
+  background: transparent !important;
+}
+
+/* Fix chart container */
+.chart-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+.kpi-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: 0.3s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}

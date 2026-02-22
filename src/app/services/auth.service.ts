@@ -1,25 +1,36 @@
 // auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { AuthUser } from '../models/models';
 import { environment } from '../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private tokenSubject = new BehaviorSubject<string | null>(
     localStorage.getItem('token'),
   );
-  private roleSubject = new BehaviorSubject<string | null>(null);
+
+  private roleSubject = new BehaviorSubject<string | null>(
+    this.getRoleFromStoredToken(),
+  );
 
   constructor(private http: HttpClient) {}
 
-  register(email: string, password: string): Observable<AuthUser> {
-    return this.http.post<AuthUser>(`${environment.apiBaseUrl}/auth/register`, {
+  // ===============================
+  // REGISTER
+  // ===============================
+
+  register(email: string, password: string): Observable<any> {
+    return this.http.post(`${environment.apiBaseUrl}/auth/register`, {
       email,
       password,
     });
   }
+
+  // ===============================
+  // LOGIN
+  // ===============================
 
   login(email: string, password: string): Observable<string> {
     return this.http
@@ -28,19 +39,27 @@ export class AuthService {
       }>(`${environment.apiBaseUrl}/auth/login`, { email, password })
       .pipe(
         tap(({ token }) => {
+          localStorage.setItem('token', token);
           this.tokenSubject.next(token);
-          localStorage.setItem('token', token); // Memory: use private var instead
           this.roleSubject.next(this.parseRole(token));
         }),
-        map(({ token }) => token),
+        map((res) => res.token),
       );
   }
 
+  // ===============================
+  // LOGOUT
+  // ===============================
+
   logout(): void {
-    this.tokenSubject.next(null);
     localStorage.removeItem('token');
+    this.tokenSubject.next(null);
     this.roleSubject.next(null);
   }
+
+  // ===============================
+  // AUTH STATE
+  // ===============================
 
   getToken(): string | null {
     return this.tokenSubject.value;
@@ -51,14 +70,58 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+
+    return !this.isTokenExpired(token);
   }
+
+  // ===============================
+  // TOKEN HELPERS
+  // ===============================
 
   private parseRole(token: string): string | null {
     try {
-      return JSON.parse(atob(token.split('.')[1])).role || null;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+
+      // .NET role claim support
+      return (
+        payload.role ||
+        payload[
+          'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+        ] ||
+        null
+      );
     } catch {
       return null;
     }
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload.exp) return false;
+
+      const expiry = payload.exp * 1000;
+      return Date.now() > expiry;
+    } catch {
+      return true;
+    }
+  }
+
+  private getRoleFromStoredToken(): string | null {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    return this.parseRole(token);
+  }
+  forgotPassword(email: string) {
+    return this.http.post('api/forgot-password', { email });
+  }
+  resetPassword(email: string, oldPassword: string, newPassword: string) {
+    return this.http.post(`${environment.apiBaseUrl}/auth/reset-password`, {
+      email,
+      oldPassword,
+      newPassword,
+    });
   }
 }

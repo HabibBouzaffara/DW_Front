@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
   selector: 'app-root',
   template: `
     <mat-toolbar color="primary">
-      <span>Sales DW Dashboard</span>
+      <span class="nav-title">Sales DW Dashboard</span>
       <span class="spacer"></span>
       <a mat-button routerLink="/login" *ngIf="!authService.isAuthenticated()">
         <mat-icon>login</mat-icon>
@@ -40,16 +40,40 @@ import { RouterModule } from '@angular/router';
   `,
   styles: [
     `
-      .content {
-        padding: 2rem;
-        max-width: 1400px;
-        margin: 0 auto;
-      }
-      .spacer {
-        flex: 1 1 auto;
-      }
+      /* ============================= */
+      /* PREMIUM NAVBAR */
+      /* ============================= */
+
       mat-toolbar {
-        justify-content: space-between;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0 30px;
+        height: 70px;
+      }
+
+      /* Title */
+      .nav-title {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 1px;
+      }
+
+      /* Spacer */
+      .spacer {
+        flex: 1;
+      }
+
+      /* Buttons */
+      mat-toolbar button {
+        color: white;
+        transition: 0.3s;
+      }
+
+      mat-toolbar button:hover {
+        color: #38bdf8;
+        transform: translateY(-2px);
       }
     `,
   ],
@@ -60,5 +84,6 @@ export class AppComponent {
 
   logout() {
     this.authService.logout();
+    window.location.reload(); // Reload the page to update UI state
   }
 }
