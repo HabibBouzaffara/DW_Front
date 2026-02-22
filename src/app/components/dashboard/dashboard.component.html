@@ -78,14 +78,27 @@
       </select>
     </div>
 
-    <!-- Chart -->
-    <canvas
-      baseChart
-      [data]="vendorChartData"
-      [options]="vendorChartOptions"
-      [type]="'bar'"
+    <!-- ================= LOADING BAR ================= -->
+
+    <div
+      *ngIf="chartLoading"
+      style="margin-bottom: 15px; text-align: center; color: white"
     >
-    </canvas>
+      Loading Charts... {{ chartProgress }}%
+      <mat-progress-bar mode="determinate" [value]="chartProgress">
+      </mat-progress-bar>
+    </div>
+
+    <!-- Chart -->
+    <div *ngIf="!chartLoading">
+      <canvas
+        baseChart
+        [data]="vendorChartData"
+        [options]="vendorChartOptions"
+        [type]="'bar'"
+      >
+      </canvas>
+    </div>
   </mat-card>
 
   <!-- ============================= -->
@@ -133,13 +146,25 @@
         </select>
       </div>
 
-      <canvas
-        baseChart
-        [data]="profitChartData"
-        [options]="profitChartOptions"
-        [type]="'bar'"
+      <!-- LOADING -->
+      <div
+        *ngIf="chartLoading"
+        style="margin-bottom: 15px; text-align: center; color: white"
       >
-      </canvas>
+        Loading Charts... {{ chartProgress }}%
+        <mat-progress-bar mode="determinate" [value]="chartProgress">
+        </mat-progress-bar>
+      </div>
+
+      <div style="height: 350px" *ngIf="!chartLoading">
+        <canvas
+          baseChart
+          [data]="profitChartData"
+          [options]="profitChartOptions"
+          [type]="'bar'"
+        >
+        </canvas>
+      </div>
     </mat-card>
 
     <!-- =============================== -->
@@ -149,13 +174,25 @@
     <mat-card class="chart-card half">
       <h2>Sales vs Purchase Trend</h2>
 
-      <canvas
-        baseChart
-        [data]="comparisonChartData"
-        [options]="comparisonChartOptions"
-        [type]="'line'"
+      <!-- LOADING -->
+      <div
+        *ngIf="chartLoading"
+        style="margin-bottom: 15px; text-align: center; color: white"
       >
-      </canvas>
+        Loading Charts... {{ chartProgress }}%
+        <mat-progress-bar mode="determinate" [value]="chartProgress">
+        </mat-progress-bar>
+      </div>
+
+      <div style="height: 350px" *ngIf="!chartLoading">
+        <canvas
+          baseChart
+          [data]="comparisonChartData"
+          [options]="comparisonChartOptions"
+          [type]="'line'"
+        >
+        </canvas>
+      </div>
     </mat-card>
   </div>
 </div>
