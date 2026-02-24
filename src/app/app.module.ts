@@ -26,6 +26,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { AppRoutingModule } from './app-routing.module';
 import { RegisterComponent } from './register/register.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { CartSidebarComponent } from './components/cart-sidebar/cart-sidebar.component';
 
 @NgModule({
   declarations: [AppComponent],
@@ -45,6 +46,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
     MatTableModule,
     AppRoutingModule,
     NgChartsModule,
+    CartSidebarComponent,
   ],
   providers: [
     {

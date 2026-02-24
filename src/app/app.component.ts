@@ -7,6 +7,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
+import { CartSidebarComponent } from './components/cart-sidebar/cart-sidebar.component';
 
 @Component({
   selector: 'app-root',
@@ -53,6 +54,8 @@ import { RouterModule } from '@angular/router';
       <router-outlet></router-outlet>
     </div>
 
+    <!-- Global cart sidebar (available on all pages) -->
+    <app-cart-sidebar></app-cart-sidebar>
     <!-- ══════════════════════════════════════
          RESET PASSWORD MODAL
     ══════════════════════════════════════ -->

@@ -4,6 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
 
 @Component({
@@ -39,7 +40,8 @@ export class ProductListComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
-    public authService: AuthService
+    public authService: AuthService,
+    public cartService: CartService
   ) {}
 
   get isAdmin(): boolean {
@@ -192,5 +194,21 @@ export class ProductListComponent implements OnInit {
 
   private emptyForm(): Partial<Product> {
     return { productName: '', listPrice: 0, standardCost: 0, category: '', subcategory: '', image: '' };
+  }
+
+  // ── Cart ─────────────────────────────────────────────────
+
+  addToCart(product: Product, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.cartService.addToCart(product);
+  }
+
+  isInCart(productId: number): boolean {
+    return this.cartService.isInCart(productId);
+  }
+
+  getCartQty(productId: number): number {
+    return this.cartService.getQuantity(productId);
   }
 }

@@ -89,10 +89,58 @@
           </div>
         </div>
 
-        <!-- CTA -->
-        <a routerLink="/products" class="pd-back-btn" id="btn-back-to-list">
-          ← View All Products
-        </a>
+        <!-- CTA buttons -->
+        <div class="pd-cta-group">
+
+          <!-- Add to Cart — always available -->
+          <button
+            class="pd-btn pd-btn--cart"
+            [class.pd-btn--cart-added]="isInCart"
+            id="btn-detail-add-to-cart"
+            (click)="addToCart()"
+          >
+            <svg *ngIf="!isInCart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              <line x1="12" y1="10" x2="12" y2="16"/><line x1="9" y1="13" x2="15" y2="13"/>
+            </svg>
+            <svg *ngIf="isInCart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              <polyline points="17 9 12 14 9 11"/>
+            </svg>
+            <span *ngIf="!isInCart">Add to Cart</span>
+            <span *ngIf="isInCart">In Cart ({{ cartQty }}) — Add More</span>
+          </button>
+
+          <!-- Place Order — only if authenticated -->
+          <button
+            *ngIf="isAuthenticated"
+            class="pd-btn pd-btn--order"
+            id="btn-detail-place-order"
+            (click)="addToCart()"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Place Order
+          </button>
+
+          <!-- Sign-in nudge — only if NOT authenticated -->
+          <div *ngIf="!isAuthenticated" class="pd-auth-notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span><a routerLink="/login">Sign in</a> to place your order</span>
+          </div>
+
+          <!-- Back link -->
+          <a routerLink="/products" class="pd-back-btn" id="btn-back-to-list">
+            ← View All Products
+          </a>
+        </div>
       </div>
     </div>
   </div>

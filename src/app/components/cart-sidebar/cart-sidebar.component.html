@@ -1,0 +1,157 @@
+<!-- Floating cart button -->
+<button class="cs-fab" id="btn-cart-toggle" (click)="toggle()" [class.cs-fab--has-items]="totalCount > 0">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="9" cy="21" r="1"/>
+    <circle cx="20" cy="21" r="1"/>
+    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+  </svg>
+  <span class="cs-fab__badge" *ngIf="totalCount > 0">{{ totalCount }}</span>
+</button>
+
+<!-- Overlay -->
+<div class="cs-overlay" [class.cs-overlay--visible]="isOpen" (click)="close()"></div>
+
+<!-- Sidebar drawer -->
+<aside class="cs-drawer" [class.cs-drawer--open]="isOpen" id="cart-sidebar">
+
+  <!-- Header -->
+  <div class="cs-drawer__header">
+    <div class="cs-drawer__title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="9" cy="21" r="1"/>
+        <circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      <span>Your Cart</span>
+      <span class="cs-drawer__count" *ngIf="totalCount > 0">{{ totalCount }}</span>
+    </div>
+    <button class="cs-drawer__close" (click)="close()" id="btn-close-cart">✕</button>
+  </div>
+
+  <!-- ── Order Success banner ── -->
+  <div class="cs-order-success" *ngIf="orderStatus === 'success'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="16 10 11 15 8 12"/>
+    </svg>
+    <div>
+      <p class="cs-order-success__title">Order confirmed! 🎉</p>
+      <p class="cs-order-success__sub">Command #{{ lastCommandId }} created successfully.</p>
+    </div>
+  </div>
+
+  <!-- ── Order Error banner ── -->
+  <div class="cs-order-error" *ngIf="orderStatus === 'error'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <div class="cs-order-error__text">
+      <p>{{ orderError }}</p>
+    </div>
+    <button class="cs-order-error__dismiss" (click)="dismissError()">✕</button>
+  </div>
+
+  <!-- Empty state -->
+  <div class="cs-empty" *ngIf="items.length === 0 && orderStatus !== 'success'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+    <p>Your cart is empty</p>
+    <span>Browse the catalog and add products!</span>
+  </div>
+
+  <!-- Items list -->
+  <div class="cs-items" *ngIf="items.length > 0 && orderStatus !== 'success'">
+    <div
+      class="cs-item"
+      *ngFor="let item of items"
+      [id]="'cart-item-' + item.product.id"
+    >
+      <!-- Thumbnail -->
+      <div class="cs-item__thumb">
+        <img *ngIf="item.product.image" [src]="item.product.image" [alt]="item.product.productName" />
+        <div class="cs-item__no-img" *ngIf="!item.product.image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="cs-item__info">
+        <p class="cs-item__category">{{ item.product.category }}</p>
+        <p class="cs-item__name">{{ item.product.productName }}</p>
+        <p class="cs-item__price">${{ (item.product.listPrice * item.quantity) | number:'1.2-2' }}</p>
+      </div>
+
+      <!-- Quantity controls -->
+      <div class="cs-item__qty">
+        <button class="cs-qty-btn" (click)="decrement(item)" [id]="'btn-qty-dec-' + item.product.id" [disabled]="isOrdering">−</button>
+        <span class="cs-qty-val">{{ item.quantity }}</span>
+        <button class="cs-qty-btn" (click)="increment(item)" [id]="'btn-qty-inc-' + item.product.id" [disabled]="isOrdering">+</button>
+      </div>
+
+      <!-- Remove -->
+      <button class="cs-item__remove" (click)="remove(item)" [id]="'btn-remove-' + item.product.id" title="Remove" [disabled]="isOrdering">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+          <path d="M9 6V4h6v2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="cs-drawer__footer" *ngIf="items.length > 0 && orderStatus !== 'success'">
+    <div class="cs-total">
+      <span class="cs-total__label">Total</span>
+      <span class="cs-total__value">${{ totalPrice | number:'1.2-2' }}</span>
+    </div>
+
+    <!-- Clear cart -->
+    <button class="cs-btn cs-btn--ghost" (click)="clearAll()" id="btn-clear-cart" [disabled]="isOrdering">
+      Clear Cart
+    </button>
+
+    <!-- Place Order: only if authenticated -->
+    <button
+      *ngIf="isAuthenticated"
+      class="cs-btn cs-btn--primary"
+      [class.cs-btn--loading]="isOrdering"
+      id="btn-place-order"
+      (click)="placeOrder()"
+      [disabled]="isOrdering"
+    >
+      <!-- Loading spinner -->
+      <span *ngIf="isOrdering" class="cs-spinner"></span>
+
+      <!-- Normal state -->
+      <ng-container *ngIf="!isOrdering">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Place Order
+      </ng-container>
+
+      <span *ngIf="isOrdering">Processing…</span>
+    </button>
+
+    <!-- Login prompt: only if NOT authenticated -->
+    <div *ngIf="!isAuthenticated" class="cs-auth-notice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span><a routerLink="/login" (click)="close()">Sign in</a> to place your order — your cart will be saved!</span>
+    </div>
+  </div>
+
+</aside>

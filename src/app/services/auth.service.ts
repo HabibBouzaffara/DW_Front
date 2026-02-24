@@ -11,6 +11,9 @@ export class AuthService {
     localStorage.getItem('token'),
   );
 
+  /** Public observable — emits whenever the token changes (login / logout) */
+  readonly token$ = this.tokenSubject.asObservable();
+
   private roleSubject = new BehaviorSubject<string | null>(
     this.getRoleFromStoredToken(),
   );
