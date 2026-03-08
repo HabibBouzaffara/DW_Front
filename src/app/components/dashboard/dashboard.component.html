@@ -1,198 +1,170 @@
 <div class="dashboard-container">
-  <!-- ============================= -->
+  <div class="dashboard-header">
+    <h1>Statistics & Analytics</h1>
+    <div class="global-filters">
+        <div class="filter-group">
+            <label>Top Records:</label>
+            <input type="number" [(ngModel)]="globalTop" (change)="onFilterChange()" min="1" class="glass-input" />
+        </div>
+        <div class="filter-group">
+            <label>Category:</label>
+            <select [(ngModel)]="globalCategory" (change)="onFilterChange()" class="glass-input">
+                <option *ngFor="let c of categories" [value]="c">{{ c | titlecase }}</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Sort By:</label>
+            <select [(ngModel)]="globalSort" (change)="onFilterChange()" class="glass-input">
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
+            </select>
+        </div>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    <i class="material-icons">error_outline</i>
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="chartLoading" class="loading-overlay">
+    <div class="loader-content">
+      <div class="spinner"></div>
+      <p>Loading Dashboard Analytics... {{ chartProgress }}%</p>
+      <mat-progress-bar mode="determinate" [value]="chartProgress" class="custom-progress"></mat-progress-bar>
+    </div>
+  </div>
+
   <!-- KPI CARDS -->
-  <!-- ============================= -->
-
   <div class="kpi-grid">
-    <mat-card class="kpi-card">
-      <h3>Total Sales</h3>
-      <h1>{{ kpis.totalSales | currency: "USD" }}</h1>
+    <mat-card class="kpi-card glass-panel primary-glow">
+      <div class="kpi-icon"><i class="material-icons">attach_money</i></div>
+      <div class="kpi-content">
+          <h3>Total Sales</h3>
+          <h1>{{ kpis.totalSales | currency: "USD" }}</h1>
+      </div>
     </mat-card>
 
-    <mat-card class="kpi-card">
-      <h3>Total Customers</h3>
-      <h1>{{ kpis.totalCustomers | number }}</h1>
+    <mat-card class="kpi-card glass-panel success-glow">
+      <div class="kpi-icon"><i class="material-icons">people</i></div>
+      <div class="kpi-content">
+          <h3>Total Customers</h3>
+          <h1>{{ kpis.totalCustomers | number }}</h1>
+      </div>
     </mat-card>
 
-    <mat-card class="kpi-card">
-      <h3>Total Products</h3>
-      <h1>{{ kpis.totalProducts | number }}</h1>
+    <mat-card class="kpi-card glass-panel warning-glow">
+      <div class="kpi-icon"><i class="material-icons">inventory_2</i></div>
+      <div class="kpi-content">
+          <h3>Total Products</h3>
+          <h1>{{ kpis.totalProducts | number }}</h1>
+      </div>
     </mat-card>
   </div>
 
-  <!-- ============================= -->
-  <!-- SALES BY VENDOR -->
-  <!-- ============================= -->
-
-  <mat-card class="chart-card">
-    <h2>Sales By Vendor</h2>
-
-    <!-- Filters -->
-    <div class="filters">
-      <label>Top:</label>
-      <input
-        style="
-          width: 60px;
-          text-align: center;
-          background: rgba(255, 255, 255, 0.314);
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          border-radius: 4px;
-        "
-        type="number"
-        [(ngModel)]="topVendor"
-        (change)="onVendorFilterChange()"
-        min="1"
-      />
-
-      <label>Category:</label>
-      <select
-        style="
-          width: 100px;
-          text-align: center;
-          background: rgba(255, 255, 255, 0.314);
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          border-radius: 4px;
-        "
-        [(ngModel)]="categoryVendor"
-        (change)="onVendorFilterChange()"
-      >
-        <option *ngFor="let c of categories" [value]="c">
-          {{ c }}
-        </option>
-      </select>
-
-      <label>Sort:</label>
-      <select
-        style="
-          width: 80px;
-          text-align: center;
-          background: rgba(255, 255, 255, 0.314);
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          border-radius: 4px;
-        "
-        [(ngModel)]="sortVendor"
-        (change)="onVendorFilterChange()"
-      >
-        <option value="desc">Desc</option>
-        <option value="asc">Asc</option>
-      </select>
-    </div>
-
-    <!-- ================= LOADING BAR ================= -->
-
-    <div
-      *ngIf="chartLoading"
-      style="margin-bottom: 15px; text-align: center; color: white"
-    >
-      Loading Charts... {{ chartProgress }}%
-      <mat-progress-bar mode="determinate" [value]="chartProgress">
-      </mat-progress-bar>
-    </div>
-
-    <!-- Chart -->
-    <div *ngIf="!chartLoading">
-      <canvas
-        baseChart
-        [data]="vendorChartData"
-        [options]="vendorChartOptions"
-        [type]="'bar'"
-      >
-      </canvas>
-    </div>
-  </mat-card>
-
-  <!-- ============================= -->
-  <!-- LAST TWO CHARTS SIDE BY SIDE -->
-  <!-- ============================= -->
-
+  <!-- CHARTS ROW 1 -->
   <div class="charts-row">
-    <!-- =============================== -->
-    <!-- PRODUCTS BY PROFIT -->
-    <!-- =============================== -->
-
-    <mat-card class="chart-card half">
-      <h2>Products By Profit</h2>
-
-      <div class="filters">
-        <label>Top:</label>
-        <input
-          style="
-            width: 60px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.314);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 4px;
-          "
-          type="number"
-          [(ngModel)]="topProfit"
-          (change)="loadProductsByProfit()"
-          min="1"
-        />
-
-        <label>Sort:</label>
-        <select
-          style="
-            width: 80px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.314);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 4px;
-          "
-          [(ngModel)]="sortProfit"
-          (change)="loadProductsByProfit()"
-        >
-          <option value="desc">Desc</option>
-          <option value="asc">Asc</option>
-        </select>
+    <mat-card class="chart-card glass-panel">
+      <div class="chart-header">
+        <h2>Purchasing By Vendor</h2>
+        <mat-icon class="info-icon" matTooltip="Displays total purchasing amounts grouped by vendors (updated backend endpoint)." matTooltipPosition="above">info</mat-icon>
       </div>
-
-      <!-- LOADING -->
-      <div
-        *ngIf="chartLoading"
-        style="margin-bottom: 15px; text-align: center; color: white"
-      >
-        Loading Charts... {{ chartProgress }}%
-        <mat-progress-bar mode="determinate" [value]="chartProgress">
-        </mat-progress-bar>
+      <div class="chart-wrapper" *ngIf="!chartLoading && hasVendorData">
+        <canvas baseChart [data]="vendorChartData" [options]="vendorChartOptions" [type]="'bar'"></canvas>
       </div>
-
-      <div style="height: 350px" *ngIf="!chartLoading">
-        <canvas
-          baseChart
-          [data]="profitChartData"
-          [options]="profitChartOptions"
-          [type]="'bar'"
-        >
-        </canvas>
+      <div class="empty-state" *ngIf="!chartLoading && !hasVendorData">
+          <p>No vendor data available for the selected filters.</p>
       </div>
     </mat-card>
 
-    <!-- =============================== -->
-    <!-- SALES VS PURCHASE (LINE) -->
-    <!-- =============================== -->
-
-    <mat-card class="chart-card half">
-      <h2>Sales vs Purchase Trend</h2>
-
-      <!-- LOADING -->
-      <div
-        *ngIf="chartLoading"
-        style="margin-bottom: 15px; text-align: center; color: white"
-      >
-        Loading Charts... {{ chartProgress }}%
-        <mat-progress-bar mode="determinate" [value]="chartProgress">
-        </mat-progress-bar>
+    <mat-card class="chart-card glass-panel">
+      <div class="chart-header">
+        <h2>Profit By Product</h2>
+        <mat-icon class="info-icon" matTooltip="Displays the calculated profit (Sales - Purchasing) for each product." matTooltipPosition="above">info</mat-icon>
       </div>
-
-      <div style="height: 350px" *ngIf="!chartLoading">
-        <canvas
-          baseChart
-          [data]="comparisonChartData"
-          [options]="comparisonChartOptions"
-          [type]="'line'"
-        >
-        </canvas>
+      <div class="chart-wrapper" *ngIf="!chartLoading && hasProfitData">
+        <canvas baseChart [data]="profitChartData" [options]="profitChartOptions" [type]="'bar'"></canvas>
+      </div>
+      <div class="empty-state" *ngIf="!chartLoading && !hasProfitData">
+          <p>No profit data available for the selected filters.</p>
       </div>
     </mat-card>
   </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="charts-row">
+    <mat-card class="chart-card glass-panel">
+      <div class="chart-header">
+        <h2>Top Products By Revenue</h2>
+        <mat-icon class="info-icon" matTooltip="Highlights the products with the highest revenue (new API returns revenue)." matTooltipPosition="above">info</mat-icon>
+      </div>
+      <div class="chart-wrapper" *ngIf="!chartLoading && hasTopProductsData">
+        <canvas baseChart [data]="topProductsChartData" [options]="topProductsChartOptions" [type]="'bar'"></canvas>
+      </div>
+      <div class="empty-state" *ngIf="!chartLoading && !hasTopProductsData">
+          <p>No top products data available for the selected filters.</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="chart-card glass-panel">
+      <div class="chart-header">
+        <h2>Purchasing by Vendor</h2>
+        <mat-icon class="info-icon" matTooltip="Shows the distribution of purchasing expenses across different vendors (same dataset as the top chart)." matTooltipPosition="above">info</mat-icon>
+      </div>
+      <div class="chart-wrapper" *ngIf="!chartLoading && hasPurchasingData">
+        <canvas baseChart [data]="purchasingChartData" [options]="purchasingChartOptions" [type]="'pie'"></canvas>
+      </div>
+      <div class="pagination-controls" *ngIf="!chartLoading && hasPurchasingData && fullPurchasingData.length > purchasingPageSize">
+        <button (click)="prevPurchasingPage()" [disabled]="purchasingPage === 0" class="glass-btn">
+          <mat-icon>chevron_left</mat-icon> Prev
+        </button>
+        <span>Page {{ purchasingPage + 1 }}</span>
+        <button (click)="nextPurchasingPage()" [disabled]="(purchasingPage + 1) * purchasingPageSize >= fullPurchasingData.length" class="glass-btn">
+          Next <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <div class="empty-state" *ngIf="!chartLoading && !hasPurchasingData">
+          <p>No purchasing data available for the selected filters.</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- CHARTS ROW 3 -->
+  <div class="charts-row">
+    <mat-card class="chart-card glass-panel">
+      <div class="chart-header">
+        <h2>Sales Over Years</h2>
+        <mat-icon class="info-icon" matTooltip="Illustrates the trend of total sales amounts over time." matTooltipPosition="above">info</mat-icon>
+      </div>
+      <div class="chart-wrapper" *ngIf="!chartLoading && hasYearlyData">
+        <canvas baseChart [data]="yearlyChartData" [options]="yearlyChartOptions" [type]="'line'"></canvas>
+      </div>
+      <div class="empty-state" *ngIf="!chartLoading && !hasYearlyData">
+          <p>No yearly data available for the selected filters.</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="chart-card glass-panel">
+      <div class="chart-header">
+        <h2>Sales By Territory</h2>
+        <mat-icon class="info-icon" matTooltip="Breaks down total sales amounts by geographical territory." matTooltipPosition="above">info</mat-icon>
+      </div>
+      <div class="chart-wrapper" *ngIf="!chartLoading && hasTerritoryData">
+        <canvas baseChart [data]="territoryChartData" [options]="territoryChartOptions" [type]="'doughnut'"></canvas>
+      </div>
+      <div class="pagination-controls" *ngIf="!chartLoading && hasTerritoryData && fullTerritoryData.length > territoryPageSize">
+        <button (click)="prevTerritoryPage()" [disabled]="territoryPage === 0" class="glass-btn">
+          <mat-icon>chevron_left</mat-icon> Prev
+        </button>
+        <span>Page {{ territoryPage + 1 }}</span>
+        <button (click)="nextTerritoryPage()" [disabled]="(territoryPage + 1) * territoryPageSize >= fullTerritoryData.length" class="glass-btn">
+          Next <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <div class="empty-state" *ngIf="!chartLoading && !hasTerritoryData">
+          <p>No territory data available for the selected filters.</p>
+      </div>
+    </mat-card>
+  </div>
+
 </div>

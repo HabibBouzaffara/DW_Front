@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { tap, shareReplay } from 'rxjs/operators';
+import { tap, shareReplay, map } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 
 export interface PagedResult<T> {
@@ -90,14 +90,19 @@ export class DashboardService {
      STATISTICS  (all cached)
   ───────────────────────────────────────────── */
 
-  getSalesByVendor(top = 10, sort = 'desc', category = 'all') {
-    const url = `${this.baseUrl}/statistics/sales-by-vendor?sort=${sort}&top=${top}&category=${category}`;
-    return this.getCached<any[]>(url);
+  // previously returned sales-by-vendor; backend now exposes purchasing-by-vendor
+  // Keep this method as a thin wrapper/alias for compatibility with existing callers.
+  getSalesByVendor(top = 10, order = 'desc', category: string | null = 'all') {
+    return this.getPurchasingByVendor(top, order, category);
   }
 
-  getTopProducts(top = 10, sort = 'desc') {
-    const url = `${this.baseUrl}/statistics/top-products?top=${top}&sort=${sort}`;
-    return this.getCached<any[]>(url);
+  getTopProducts(top = 10, order = 'desc', category: string | null = null) {
+    // new endpoint returns revenue by product
+    let url = `${this.baseUrl}/VwTopProduct?top=${top}&order=${order}`;
+    if (category) {
+      url += `&category=${category}`;
+    }
+    return this.getCached<any>(url).pipe(map((r: any) => (r && r.items) ? r.items : r));
   }
 
   getTimeSeries(metric: string, period: string, months = 12) {
@@ -105,14 +110,57 @@ export class DashboardService {
     return this.getCached<any[]>(url);
   }
 
-  getProductsByProfit(top = 10, sort = 'desc') {
-    const url = `${this.baseUrl}/statistics/products-by-profit?top=${top}&sort=${sort}`;
-    return this.getCached<any[]>(url);
+  getProductsByProfit(top = 10, order = 'desc', category: string | null = null) {
+    let url = `${this.baseUrl}/VwProductProfit?top=${top}&order=${order}`;
+    if (category) {
+      url += `&category=${category}`;
+    }
+    return this.getCached<any>(url).pipe(map((r: any) => (r && r.items) ? r.items : r));
   }
 
   getKpis() {
-    const url = `${this.baseUrl}/statistics/totals`;
+    // KPI endpoint remains unchanged for now; backend modifications did not include this
+    const url = `${this.baseUrl}/Kpi/getKpis`;
     return this.getCached<any>(url);
+  }
+
+  /* new backend endpoints, exposed directly from the API */
+  getPurchasingByVendor(top = 50, order = 'desc', category: string | null = null) {
+    let url = `${this.baseUrl}/VwPurchasingByVendor?top=${top}&order=${order}`;
+    if (category !== null && category !== undefined) {
+      url += `&category=${category}`;
+    }
+    return this.getCached<any>(url).pipe(map((r: any) => (r && r.items) ? r.items : r));
+  }
+
+  getSalesByTerritory(top = 50, order = 'desc', territory: string | null = null) {
+    let url = `${this.baseUrl}/VwSalesByTerritory?top=${top}&order=${order}`;
+    if (territory !== null && territory !== undefined) {
+      url += `&territory=${territory}`;
+    }
+    return this.getCached<any>(url).pipe(map((r: any) => (r && r.items) ? r.items : r));
+  }
+
+  getSalesByYear(top = 50, order = 'desc') {
+    const url = `${this.baseUrl}/VwTotalSalesByYear?top=${top}&order=${order}`;
+    return this.getCached<any>(url).pipe(map((r: any) => (r && r.items) ? r.items : r));
+  }
+
+  // optional detailed endpoints might be used later
+  getPurchasingBase(top = 50, order = 'desc', category: string | null = null) {
+    let url = `${this.baseUrl}/VwPurchasingBase?top=${top}&order=${order}`;
+    if (category !== null && category !== undefined) {
+      url += `&category=${category}`;
+    }
+    return this.getCached<any>(url).pipe(map((r: any) => (r && r.items) ? r.items : r));
+  }
+
+  getSalesBase(top = 50, order = 'desc', category: string | null = null) {
+    let url = `${this.baseUrl}/VwSalesBase?top=${top}&order=${order}`;
+    if (category !== null && category !== undefined) {
+      url += `&category=${category}`;
+    }
+    return this.getCached<any>(url).pipe(map((r: any) => (r && r.items) ? r.items : r));
   }
 
   /* ─────────────────────────────────────────────
@@ -123,15 +171,16 @@ export class DashboardService {
 
   loadInitialStats(
     topVendor = 10,
-    sortVendor = 'desc',
+    orderVendor = 'desc',
     categoryVendor = 'all',
     topProfit = 10,
-    sortProfit = 'desc'
+    orderProfit = 'desc'
   ): Observable<[any, any[], any[]]> {
+    // fetch KPI + vendor purchasing + product profit in one batch
     return forkJoin([
       this.getKpis(),
-      this.getSalesByVendor(topVendor, sortVendor, categoryVendor),
-      this.getProductsByProfit(topProfit, sortProfit),
+      this.getPurchasingByVendor(topVendor, orderVendor, categoryVendor),
+      this.getProductsByProfit(topProfit, orderProfit, categoryVendor),
     ]);
   }
 }

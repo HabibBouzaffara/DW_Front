@@ -29,6 +29,20 @@ const routes: Routes = [
     // canActivate: [AdminGuard],
   },
   {
+    path: 'commands',
+    loadComponent: () =>
+      import('./components/commands-list/commands-list.component').then(
+        (m) => m.CommandsListComponent,
+      ),
+  },
+  {
+    path: 'commands/:id',
+    loadComponent: () =>
+      import('./components/command-lines/command-lines.component').then(
+        (m) => m.CommandLinesComponent,
+      ),
+  },
+  {
     path: 'register',
     loadComponent: () =>
       import('./register/register.component').then((m) => m.RegisterComponent),
@@ -40,7 +54,7 @@ const routes: Routes = [
         (m) => m.ForgotPasswordComponent,
       ),
   },
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', redirectTo: '/products', pathMatch: 'full' },
 ];
 
 @NgModule({

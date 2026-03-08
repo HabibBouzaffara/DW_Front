@@ -6,6 +6,7 @@ import { from } from 'rxjs';
 import { Product } from '../models/product.model';
 import { CartItem } from '../models/cart-item.model';
 import { CommandService, CommandResponse } from './command.service';
+import { AuthService } from './auth.service';
 
 const CART_KEY = 'dw_cart';
 
@@ -16,7 +17,12 @@ export class CartService {
   /** Reactive cart items array */
   items$ = this.itemsSubject.asObservable();
 
-  constructor(private commandService: CommandService) {}
+  constructor(
+    private commandService: CommandService,
+    private auth: AuthService
+  ) {
+    // no-op: cart is entirely client‑side until order submission
+  }
 
   // ── Getters ─────────────────────────────────────────────────
 
@@ -64,6 +70,8 @@ export class CartService {
   }
 
   clearCart(): void {
+    // simply clear the local state; the backend will only see data when the
+    // user places an order.
     this.persist([]);
   }
 
@@ -77,10 +85,10 @@ export class CartService {
 
   // ── Order submission ─────────────────────────────────────────
   /**
-   * Creates a Command on the backend, then a CommandLine for every cart item
-   * (sequentially to respect FK constraints), then clears local storage.
-   *
-   * Returns an Observable that emits the CommandResponse on success.
+   * Sends the current cart to the backend as a single order.  The server
+   * will create a new command with `approved = 1` and one line per product.
+   * Only authenticated users may place orders; guests should be redirected to
+   * login before calling this method.
    */
   submitOrder(): Observable<CommandResponse> {
     const itemsToOrder = [...this.items];
@@ -89,11 +97,13 @@ export class CartService {
       return throwError(() => new Error('Cart is empty'));
     }
 
+    if (!this.auth.isAuthenticated()) {
+      return throwError(() => new Error('You must be logged in to place an order'));
+    }
+
     return new Observable<CommandResponse>((observer) => {
-      // Step 1 — create the parent command
-      this.commandService.createCommand().subscribe({
+      this.commandService.createCommand(1).subscribe({
         next: (cmd) => {
-          // Step 2 — create each command line sequentially
           from(itemsToOrder)
             .pipe(
               concatMap((item) =>
@@ -109,7 +119,6 @@ export class CartService {
             )
             .subscribe({
               next: () => {
-                // Step 3 — clear the cart
                 this.clearCart();
                 observer.next(cmd);
                 observer.complete();
@@ -125,8 +134,11 @@ export class CartService {
   // ── Storage helpers ──────────────────────────────────────────
 
   private persist(items: CartItem[]): void {
-    localStorage.setItem(CART_KEY, JSON.stringify(items));
+    // update in‑memory so subscribers see the change
     this.itemsSubject.next(items);
+
+    // always keep a local copy; the server is only hit when placing an order
+    localStorage.setItem(CART_KEY, JSON.stringify(items));
   }
 
   private loadFromStorage(): CartItem[] {
@@ -137,4 +149,6 @@ export class CartService {
       return [];
     }
   }
+
+
 }

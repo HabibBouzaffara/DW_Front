@@ -57,19 +57,9 @@ export class LoginComponent {
         .login(this.form.value.email!, this.form.value.password!)
         .subscribe({
           next: () => {
-            // If the guest had items in localStorage, submit them as an order now
-            if (this.cartService.items.length > 0) {
-              this.cartService.submitOrder().subscribe({
-                next: (cmd) => {
-                  console.log(
-                    `[Cart] Pending cart flushed → Command #${cmd.commandId}`
-                  );
-                },
-                error: (err) => {
-                  console.error('[Cart] Failed to flush pending cart', err);
-                },
-              });
-            }
+            // the `CartService` watches the auth token and will automatically
+            // move any existing guest cart to the server; we no longer need to
+            // explicitly submit an order here.
 
             // Navigate based on role
             this.auth.getUserRole() === '1'

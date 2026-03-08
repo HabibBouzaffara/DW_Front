@@ -1,0 +1,22 @@
+<div class="cmd-page">
+  <h1>Commands</h1>
+  <div *ngIf="loading">Loading commands…</div>
+  <ul *ngIf="!loading">
+    <li *ngFor="let cmd of commands" class="cmd-item">
+      <div class="cmd-info">
+        <!-- link still navigates but we hide the numerical id from UI -->
+        <a [routerLink]="['/commands', cmd.commandId]" class="cmd-link">
+          {{ cmd.email || 'user ' + cmd.userId }}
+        </a>
+      </div>
+
+      <div class="cmd-actions">
+        <ng-container *ngIf="cmd.approved === 0">
+          <button class="btn-approve" (click)="approve(cmd)">Approve</button>
+          <button class="btn-delete" (click)="delete(cmd)">Delete</button>
+        </ng-container>
+        <span *ngIf="cmd.approved === 1" class="approved-label">Approved</span>
+      </div>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,30 @@
+/* styles for command lines page */
+.cmd-lines-page {
+  padding: 24px;
+}
+
+.cmd-lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.cmd-lines-table th,
+.cmd-lines-table td {
+  border: 1px solid #444;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.cmd-lines-table th {
+  background-color: #333;
+  color: #fff;
+}
+
+.cmd-lines-table tbody tr:nth-child(odd) {
+  background-color: #2a2a2a;
+}
+
+.cmd-lines-table tbody tr:hover {
+  background-color: #3a3a3a;
+}

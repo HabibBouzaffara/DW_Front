@@ -5,6 +5,8 @@ import { NgChartsModule } from 'ng2-charts';
 import { CurrencyPipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,6 +20,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     CommonModule,
     FormsModule,
     MatProgressBarModule,
+    MatIconModule,
+    MatTooltipModule,
   ],
 })
 export class DashboardComponent implements OnInit {
@@ -66,12 +70,18 @@ export class DashboardComponent implements OnInit {
   /* FILTERS                   */
   /* ========================= */
 
-  topVendor: number = 10;
-  sortVendor: string = 'desc';
-  categoryVendor: string = 'all';
+  globalTop: number = 10;
+  globalSort: string = 'desc';
+  globalCategory: string = 'clothing';
 
-  topProfit: number = 10;
-  sortProfit: string = 'desc';
+  errorMessage: string | null = null;
+
+  hasVendorData = true;
+  hasProfitData = true;
+  hasTopProductsData = true;
+  hasPurchasingData = true;
+  hasTerritoryData = true;
+  hasYearlyData = true;
 
   categories: string[] = [
     'all',
@@ -86,86 +96,88 @@ export class DashboardComponent implements OnInit {
   /* CHARTS                    */
   /* ========================= */
 
+  /* ========================= */
+  /* CHARTS                    */
+  /* ========================= */
+
   vendorChartData: any = {
     labels: [],
-    datasets: [
-      {
-        label: 'Sales By Vendor',
-        data: [],
-        backgroundColor: 'rgba(63,81,181,0.6)',
-      },
-    ],
+    datasets: [{ label: 'Purchasing By Vendor', data: [], backgroundColor: 'rgba(63,81,181,0.7)' }],
   };
-
-  vendorChartOptions = {
-    responsive: true,
-    plugins: { legend: { display: true } },
-  };
+  vendorChartOptions = { responsive: true, plugins: { legend: { display: true } } };
 
   profitChartData: any = {
     labels: [],
-    datasets: [
-      {
-        label: 'Profit By Product',
-        data: [],
-        backgroundColor: 'rgba(76,175,80,0.6)',
-      },
-    ],
+    datasets: [{ label: 'Profit By Product', data: [], backgroundColor: 'rgba(76,175,80,0.7)' }],
   };
+  profitChartOptions = { responsive: true, plugins: { legend: { display: true } } };
 
-  profitChartOptions = {
-    responsive: true,
-    plugins: { legend: { display: true } },
-  };
-
-  comparisonChartData: any = {
+  topProductsChartData: any = {
     labels: [],
-    datasets: [
-      {
-        label: 'Total Sales',
-        data: [],
-        backgroundColor: 'rgba(33,150,243,0.6)',
-      },
-      {
-        label: 'Total Purchase',
-        data: [],
-        backgroundColor: 'rgba(244,67,54,0.6)',
-      },
-    ],
+    datasets: [{ label: 'Top Sold Products', data: [], backgroundColor: 'rgba(255,152,0,0.7)' }],
   };
+  topProductsChartOptions = { responsive: true, plugins: { legend: { display: true } } };
 
-  comparisonChartOptions = {
-    responsive: true,
-    plugins: { legend: { display: true } },
+  purchasingChartData: any = {
+    labels: [],
+    datasets: [{ label: 'Purchasing Amount', data: [], backgroundColor: ['rgba(233,30,99,0.7)', 'rgba(33,150,243,0.7)', 'rgba(156,39,176,0.7)', 'rgba(0,188,212,0.7)'] }],
   };
+  purchasingChartOptions: any = { responsive: true, plugins: { legend: { position: 'right' as const } } };
 
-  /* ========================= */
-  /* INIT — single parallel    */
-  /* batch fetch via forkJoin  */
-  /* ========================= */
+  territoryChartData: any = {
+    labels: [],
+    datasets: [{ label: 'Sales By Territory', data: [], backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0'] }],
+  };
+  territoryChartOptions: any = { responsive: true, plugins: { legend: { position: 'right' as const } } };
+
+  yearlyChartData: any = {
+    labels: [],
+    datasets: [{ label: 'Sales By Year', data: [], backgroundColor: 'rgba(103,58,183,0.7)', borderColor: 'rgba(103,58,183,1)', fill: true }],
+  };
+  yearlyChartOptions = { responsive: true, plugins: { legend: { display: true } } };
 
   ngOnInit(): void {
-    this.startLoadingAnimation();
+    this.loadAllData(true);
+  }
 
-    this.dashboardService
-      .loadInitialStats(
-        this.topVendor,
-        this.sortVendor,
-        this.categoryVendor,
-        this.topProfit,
-        this.sortProfit
-      )
-      .subscribe({
-        next: ([kpis, vendorData, profitData]) => {
-          this.applyKpis(kpis);
-          this.applyVendorData(vendorData);
-          this.applyProfitData(profitData);
-          this.stopLoadingAnimation();
-        },
-        error: () => {
-          this.stopLoadingAnimation();
-        },
-      });
+  /* ========================= */
+  /* PAGINATION STATE          */
+  /* ========================= */
+
+  fullPurchasingData: any[] = [];
+  purchasingPage = 0;
+  purchasingPageSize = 5;
+
+  fullTerritoryData: any[] = [];
+  territoryPage = 0;
+  territoryPageSize = 5;
+
+  nextPurchasingPage() {
+    if ((this.purchasingPage + 1) * this.purchasingPageSize < this.fullPurchasingData.length) {
+      this.purchasingPage++;
+      this.updatePurchasingChart();
+    }
+  }
+
+  prevPurchasingPage() {
+    if (this.purchasingPage > 0) {
+      this.purchasingPage--;
+      this.updatePurchasingChart();
+    }
+  }
+
+  nextTerritoryPage() {
+    if ((this.territoryPage + 1) * this.territoryPageSize < this.fullTerritoryData.length) {
+      this.territoryPage++;
+      this.updateTerritoryChart();
+    }
+  }
+
+  prevTerritoryPage() {
+    if (this.territoryPage > 0) {
+      this.territoryPage--;
+      this.updateTerritoryChart();
+    }
   }
 
   /* ========================= */
@@ -173,91 +185,158 @@ export class DashboardComponent implements OnInit {
   /* ========================= */
 
   private applyKpis(data: any) {
-    this.kpis.totalSales = data.totalSalesAmount;
-    this.kpis.totalCustomers = data.totalCustomers;
-    this.kpis.totalProducts = data.totalProducts;
+    if (!data) return;
+    this.kpis.totalSales = data.totalSales || 0;
+    this.kpis.totalCustomers = data.totalCustomers || 0;
+    this.kpis.totalProducts = data.totalProducts || 0;
   }
 
   private applyVendorData(data: any[]) {
+    this.hasVendorData = data && data.length > 0;
+    if (!this.hasVendorData) return;
     this.vendorChartData = {
       ...this.vendorChartData,
-      labels: data.map((x) => x.vendorName),
-      datasets: [
-        {
-          ...this.vendorChartData.datasets[0],
-          data: data.map((x) => Number(x.totalSalesAmount)),
-        },
-      ],
+      labels: data.map((x) => x.vendorName || 'Unknown'),
+      // backend now returns TotalPurchasing instead of totalSalesAmount
+      datasets: [{ ...this.vendorChartData.datasets[0], data: data.map((x) => Number(x.totalPurchasing || 0)) }],
     };
   }
 
   private applyProfitData(data: any[]) {
+    this.hasProfitData = data && data.length > 0;
+    if (!this.hasProfitData) return;
     this.profitChartData = {
       ...this.profitChartData,
-      labels: data.map((x) => x.productName),
-      datasets: [
-        {
-          ...this.profitChartData.datasets[0],
-          data: data.map((x) => Number(x.profit)),
-        },
-      ],
-    };
-
-    this.comparisonChartData = {
-      ...this.comparisonChartData,
-      labels: data.map((x) => x.productName),
-      datasets: [
-        {
-          ...this.comparisonChartData.datasets[0],
-          data: data.map((x) => Number(x.totalSalesAmount)),
-        },
-        {
-          ...this.comparisonChartData.datasets[1],
-          data: data.map((x) => Number(x.totalPurchaseAmount)),
-        },
-      ],
+      labels: data.map((x) => x.productName || 'Unknown'),
+      datasets: [{ ...this.profitChartData.datasets[0], data: data.map((x) => Number(x.profit || 0)) }],
     };
   }
 
-  /* ========================= */
-  /* SALES BY VENDOR           */
-  /* ========================= */
+  private applyTopProducts(data: any[]) {
+    this.hasTopProductsData = data && data.length > 0;
+    if (!this.hasTopProductsData) return;
+    this.topProductsChartData = {
+      ...this.topProductsChartData,
+      labels: data.map((x) => x.productName || x.productName || 'Unknown'),
+      // new endpoint returns Revenue field
+      datasets: [{ ...this.topProductsChartData.datasets[0], data: data.map((x) => Number(x.revenue || 0)) }],
+    };
+  }
 
-  loadVendorData(showLoading = true) {
+  private applyPurchasingData(data: any[]) {
+    this.hasPurchasingData = data && data.length > 0;
+    if (!this.hasPurchasingData) return;
+    this.fullPurchasingData = data;
+    this.purchasingPage = 0;
+    this.updatePurchasingChart();
+  }
+
+  private updatePurchasingChart() {
+    const start = this.purchasingPage * this.purchasingPageSize;
+    const end = start + this.purchasingPageSize;
+    const pageData = this.fullPurchasingData.slice(start, end);
+    this.purchasingChartData = {
+      ...this.purchasingChartData,
+      labels: pageData.map((x) => x.vendorName || 'Unknown'),
+      // table/chart entry uses TotalPurchasing under new contract
+      datasets: [{ ...this.purchasingChartData.datasets[0], data: pageData.map((x) => Number(x.totalPurchasing || 0)) }],
+    };
+  }
+
+  private applyTerritoryData(data: any[]) {
+    this.hasTerritoryData = data && data.length > 0;
+    if (!this.hasTerritoryData) return;
+    this.fullTerritoryData = data;
+    this.territoryPage = 0;
+    this.updateTerritoryChart();
+  }
+
+  private updateTerritoryChart() {
+    const start = this.territoryPage * this.territoryPageSize;
+    const end = start + this.territoryPageSize;
+    const pageData = this.fullTerritoryData.slice(start, end);
+    this.territoryChartData = {
+      ...this.territoryChartData,
+      labels: pageData.map((x) => x.territoryName || 'Unknown'),
+      // backend uses TotalSales
+      datasets: [{ ...this.territoryChartData.datasets[0], data: pageData.map((x) => Number(x.totalSales || 0)) }],
+    };
+  }
+
+  private applyYearlyData(data: any[]) {
+    this.hasYearlyData = data && data.length > 0;
+    if (!this.hasYearlyData) return;
+    this.yearlyChartData = {
+      ...this.yearlyChartData,
+      labels: data.map((x) => x.yearNumber || x.YearNumber || 'Unknown'),
+      datasets: [{ ...this.yearlyChartData.datasets[0], data: data.map((x) => Number(x.totalSales || 0)) }],
+    };
+  }
+
+  loadAllData(showLoading = true) {
     if (showLoading) this.startLoadingAnimation();
-    this.dashboardService
-      .getSalesByVendor(this.topVendor, this.sortVendor, this.categoryVendor)
-      .subscribe({
-        next: (data) => {
-          this.applyVendorData(data);
-          if (showLoading) this.stopLoadingAnimation();
-        },
-        error: () => {
-          if (showLoading) this.stopLoadingAnimation();
-        },
-      });
+    this.errorMessage = null;
+
+    let completed = 0;
+    const total = 7;
+    let hasError = false;
+
+    const checkComplete = () => {
+      completed++;
+      if (completed === total) {
+        if (showLoading) this.stopLoadingAnimation();
+        if (hasError) {
+          this.errorMessage = "Some statistics failed to load, displaying partial dashboard.";
+        }
+      }
+    };
+
+    const handleError = (err: any) => {
+      console.error(err);
+      hasError = true;
+      checkComplete();
+    };
+
+    this.dashboardService.getKpis().subscribe({
+      next: (data) => { this.applyKpis(data); checkComplete(); },
+      error: handleError
+    });
+
+    // vendor chart now powered by purchasing endpoint
+    this.dashboardService.getPurchasingByVendor(this.globalTop, this.globalSort, this.globalCategory).subscribe({
+      next: (data) => { console.log(data); this.applyVendorData(data); checkComplete(); },
+      error: handleError
+    });
+
+    this.dashboardService.getProductsByProfit(this.globalTop, this.globalSort, this.globalCategory).subscribe({
+      next: (data) => { this.applyProfitData(data); checkComplete(); },
+      error: handleError
+    });
+
+    this.dashboardService.getTopProducts(this.globalTop, this.globalSort, this.globalCategory).subscribe({
+      next: (data) => { this.applyTopProducts(data); checkComplete(); },
+      error: handleError
+    });
+
+    // table uses the same purchasing-by-vendor dataset
+    this.dashboardService.getPurchasingByVendor(this.globalTop, this.globalSort, this.globalCategory).subscribe({
+      next: (data) => { this.applyPurchasingData(data); checkComplete(); },
+      error: handleError
+    });
+
+    this.dashboardService.getSalesByTerritory(this.globalTop, this.globalSort).subscribe({
+      next: (data) => { this.applyTerritoryData(data); checkComplete(); },
+      error: handleError
+    });
+
+    this.dashboardService.getSalesByYear(this.globalTop, this.globalSort).subscribe({
+      next: (data) => { this.applyYearlyData(data); checkComplete(); },
+      error: handleError
+    });
   }
 
-  onVendorFilterChange() {
-    this.loadVendorData(false);
+  onFilterChange() {
+    this.loadAllData(false);
   }
 
-  /* ========================= */
-  /* PRODUCTS BY PROFIT        */
-  /* ========================= */
-
-  loadProductsByProfit(showLoading = false) {
-    if (showLoading) this.startLoadingAnimation();
-    this.dashboardService
-      .getProductsByProfit(this.topProfit, this.sortProfit)
-      .subscribe({
-        next: (data) => {
-          this.applyProfitData(data);
-          if (showLoading) this.stopLoadingAnimation();
-        },
-        error: () => {
-          if (showLoading) this.stopLoadingAnimation();
-        },
-      });
-  }
 }

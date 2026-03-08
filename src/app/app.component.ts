@@ -36,6 +36,11 @@ import { CartSidebarComponent } from './components/cart-sidebar/cart-sidebar.com
           <mat-icon>inventory_2</mat-icon> Products
         </a>
 
+        <a mat-button routerLink="/commands" routerLinkActive="nav-active"
+           id="nav-commands">
+          <mat-icon>receipt_long</mat-icon> Orders
+        </a>
+
         <span class="nav-divider"></span>
 
         <!-- Change Password -->

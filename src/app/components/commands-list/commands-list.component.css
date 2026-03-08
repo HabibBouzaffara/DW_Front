@@ -1,0 +1,47 @@
+/* basic layout for commands list */
+.cmd-page {
+  padding: 24px;
+}
+.cmd-page ul {
+  list-style: none;
+  padding: 0;
+}
+.cmd-page li {
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cmd-info a {
+  font-weight: 600;
+  margin-right: 8px;
+}
+.cmd-link, .cmd-email {
+  font-size: 1.1rem; /* slightly larger for readability */
+  font-style: italic;
+  color: #fff; /* light color against dark background */
+}
+
+.cmd-actions button {
+  margin-left: 8px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-approve {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.approved-label {
+  color: #4caf50;
+  font-weight: 600;
+}

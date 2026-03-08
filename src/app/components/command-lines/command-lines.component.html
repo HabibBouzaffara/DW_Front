@@ -1,0 +1,23 @@
+<div class="cmd-lines-page">
+  <h1>Command #{{ cmdId }} lines</h1>
+  <div *ngIf="loading">Loading…</div>
+
+  <table *ngIf="!loading" class="cmd-lines-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let line of lines">
+        <td>{{ line.productName }}</td>
+        <td>{{ line.quantity }}</td>
+        <td>\${{ line.totalPrice | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><a routerLink="/commands">← Back to all commands</a></p>
+</div>
